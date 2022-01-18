@@ -30,7 +30,7 @@
       do 25 j=m,12
       nn=lmon(j)
 1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
-      if(j.eq.m) go to 304
+      if(j==m) go to 304
       idays=1
       go to 302
 304   idays=lmon(j)-ndays+1
@@ -41,7 +41,7 @@
       do 25 i=idays,nn
       l=l+1
       read(*,101,end=2000) t,ih,iw,r
-      if(l.ne.1) go to 301
+      if(l/=1) go to 301
       write(*,1002)
 301   tx=t
       h=ih
@@ -50,12 +50,12 @@
 !
 !     fine fuel moisture code
 !
-      if(r.gt.0.5) go to 10
+      if(r>0.5) go to 10
       r=0.0
       fr=fo
       go to 150
 10    ra=r
-      if(ra.le.1.45) go to 6
+      if(ra<=1.45) go to 6
       if(ra-5.75) 9,9,12
 6     f=123.85-(55.6*alog(ra+1.016))
       go to 13
@@ -64,13 +64,13 @@
 12    f=40.69-(8.25*alog(ra-1.905))
 13    c=8.73*exp(-0.1117*fo)
       fr=(fo/100.)*f+(1.0-c)
-      if(fr.ge.0.) go to 150
+      if(fr>=0.) go to 150
       fr=0.0
 150   wmo=101.-fr
       ed=0.942*(h**0.679)+(11.*exp((h-100.)/10.))+0.18*(21.1-t)*(1.-1./exp(0.115*h))
       if(wmo-ed) 26,27,28
 26    ew=0.618*(h**0.753)+(10.*exp((h-100.)/10.))+0.18*(21.1-t)*(1.-1./exp(0.115*h))
-      if(wmo.lt.ew) go to 29
+      if(wmo<ew) go to 29
 27    wm=wmo
       go to 30
 28    z=0.424*(1.-(h/100.)**1.7)+(0.0694*(w**0.5))*(1.-(h/100.)**8)
@@ -79,7 +79,7 @@
       go to 30
 29    wm=ew-(ew-wmo)/1.9953
 30    ffm=101.-wm
-      if(ffm.gt.101.) go to 32
+      if(ffm>101.) go to 32
       if(ffm) 33,34,34
 32    ffm=101.
       go to 34
@@ -87,16 +87,16 @@
 !
 !     duff moisture code
 !
-34    if(t+1.1.ge.0.) go to 41
+34    if(t+1.1>=0.) go to 41
       t=-1.1
 41    rk=1.894*(t+1.1)*(100.-h)*(el(j)*0.0001)
-43    if(r.gt.1.5) go to 45
+43    if(r>1.5) go to 45
       pr=po
       go to 250
 45    ra=r
       rw=0.92*ra-1.27
       wmi=20.0+280./exp(0.023*po)
-      if(po.le.33.) go to 50
+      if(po<=33.) go to 50
       if(po-65.) 52,52,53
 50    b=100./(0.5+0.3*po)
       go to 55
@@ -105,27 +105,27 @@
 53    b=6.2*alog(po)-17.2
 55    wmr=wmi+(1000.*rw)/(48.77+b*rw)
       pr=43.43*(5.6348-alog(wmr-20.))
-250   if(pr.ge.0.) go to 61
+250   if(pr>=0.) go to 61
       pr=0.0
 61    dmc=pr+rk
 !
 !     drought code
 !
-      if(t+2.8.ge.0.) go to 65
+      if(t+2.8>=0.) go to 65
       t=-2.8
 65    pe=(.36*(t+2.8)+fl(j))/2.
-      if(r.le.2.8) go to 300
+      if(r<=2.8) go to 300
       ra=r
       rw=0.83*ra-1.27
       smi=800.*exp(-dot/400.)
       dr=dot-400.*alog(1.+((3.937*rw)/smi))
-      if(dr.gt.0.) go to 83
+      if(dr>0.) go to 83
       dr=0.0
 83    dc=dr+pe
       go to 350
 300   dr=dot
       go to 83
-350   if(dc.ge.0.) go to 85
+350   if(dc>=0.) go to 85
       dc=0.0
 !
 !     initial spread index, buildup index, fire weather index
@@ -134,16 +134,16 @@
       sf=19.1152*exp(-0.1386*fm)*(1.+fm**4.65/7950000.)
       si=sf*exp(0.05039*w)
 93    bui=(0.8*dc*dmc)/(dmc+0.4*dc)
-      if(bui.ge.dmc) go to 95
+      if(bui>=dmc) go to 95
       p=(dmc-bui)/dmc
       cc=0.92+(0.0114*dmc)**1.7
       bui=dmc-(cc*p)
-      if(bui.lt.0.) bui=0.
-95    if(bui.gt.80.) go to 60
+      if(bui<0.) bui=0.
+95    if(bui>80.) go to 60
       bb=0.1*si*(0.626*bui**0.809+2.)
       go to 91
 60    bb=0.1*si*(1000./(25.+108.64/exp(0.023*bui)))
-91    if(bb-1.0.le.0.) go to 98
+91    if(bb-1.0<=0.) go to 98
       sl=2.72*(0.43*alog(bb))**0.647
       fwi=exp(sl)
       go to 400
