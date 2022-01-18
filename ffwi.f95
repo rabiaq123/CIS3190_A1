@@ -2,7 +2,15 @@
 !     fortran iv program to calculate canadian forest
 !     fire weather index for a dec pdp 11 at p.f.e.s.
 !     reads data and prints out in metric units.
-      dimension lmon(12), el(12), fl(12)
+      implicit none
+
+      real :: fo, po, dot, r, rain, f, fr, ra, wmo, ed, ew, wm, z, x, ffm, t, tx, rk, pr, rw, wmi, b, wmr, dmc, pe
+      real :: smi, dr, fm, sf, si, bui, p, cc, bb, sl, fwi, c, dc
+      integer :: j, m, l, i, ndays, idays, nn, ih, h, iw, w, iffm, idmc, idc, isi, ibui, ifwi
+      integer, dimension(12) :: lmon
+      real, dimension(12) :: el, fl
+
+      ! dimension lmon(12), el(12), fl(12)
       write(*,1004)
 1004  format(2x,'program no.: f-4')
 100   format(i2,f4.1,f4.1)
@@ -21,7 +29,7 @@
       read(*,102) fo,po,dot,m,ndays
       do 25 j=m,12
       nn=lmon(j)
-1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   1   isi   bui   fwi'/)
+1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
       if(j.eq.m) go to 304
       idays=1
       go to 302
