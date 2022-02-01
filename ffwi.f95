@@ -1,44 +1,51 @@
+      program ffwi
 !     program no.: f-4
 !     fortran iv program to calculate canadian forest
 !     fire weather index for a dec pdp 11 at p.f.e.s.
 !     reads data and prints out in metric units.
       implicit none
 
-      real :: fo, po, dot, r, rain, f, fr, ra, wmo, ed, ew, wm, z, x, ffm, t, tx, rk, pr, rw, wmi, b, wmr, dmc, pe
+      real :: prev_ffmc, prev_dmc, prev_dc, r, rain, f, fr, ra, wmo, ed, ew, wm, z, x, ffm, t, tx 
+      real :: rk, pr, rw, wmi, b, wmr, dmc, pe
       real :: smi, dr, fm, sf, si, bui, p, cc, bb, sl, fwi, c, dc
-      integer :: j, m, l, i, ndays, idays, nn, ih, h, iw, w, iffm, idmc, idc, isi, ibui, ifwi
-      integer, dimension(12) :: lmon
-      real, dimension(12) :: el, fl
+      integer :: j, starting_month, l, i, days_of_data, idays, days_in_month, ih, h, iw, w, iffm, idmc, idc, isi, ibui, ifwi
+      integer, dimension(12) :: len_month
+      real, dimension(12) :: day_length_dmc, day_length_dc
 
-      ! dimension lmon(12), el(12), fl(12)
       write(*,1004)
-1004  format(2x,'program no.: f-4')
+1004  format(2x,'Forest Fire Weather Index')
+
+
+!     INPUT VALUE FORMATTING
+
+!     lengths of months and day-length factors
 100   format(i2,f4.1,f4.1)
+!     daily weather readings (temp, relative humidity, wind, rain)
 101   format(f4.1,i4,i4,f4.1)
+!     moisture codes' std starting values, starting month, and # of days data is provided
 102   format(f4.1,f4.1,f5.1,i2,i2)
-!
-!     reads length of months, and day length factors
-!
+
+!     INPUT FILE READING 
+
+!     read length of months and day-length factors
       do 20 j=1,12
-      read(*,100) lmon(j), el(j), fl(j)
+      read(*,100) len_month(j), day_length_dmc(j), day_length_dc(j)
 20    continue
-!
-!     reads initial values of ffmc, dmc, dc, starting month and number
-!     of days of data starting month.
-!
-      read(*,102) fo,po,dot,m,ndays
-      do 25 j=m,12
-      nn=lmon(j)
-1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
-      if(j==m) go to 304
+
+!     read initial values of ffmc, dmc, dc, starting month, and
+!     # of days weather data is provided that month.
+      read(*,102) prev_ffmc, prev_dmc, prev_dc, starting_month, days_of_data
+      do 25 j=starting_month,12
+      days_in_month=len_month(j)
+      1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
+      if(j==starting_month) go to 304
       idays=1
       go to 302
-304   idays=lmon(j)-ndays+1
-!
-!     reads daily weather data
-!
+304   idays=len_month(j)-days_of_data+1
+
+!     read daily weather data
 302   l=0
-      do 25 i=idays,nn
+      do 25 i=idays,days_in_month
       l=l+1
       read(*,101,end=2000) t,ih,iw,r
       if(l/=1) go to 301
@@ -47,12 +54,11 @@
       h=ih
       w=iw
       rain=r
-!
+
 !     fine fuel moisture code
-!
       if(r>0.5) go to 10
       r=0.0
-      fr=fo
+      fr=prev_ffmc
       go to 150
 10    ra=r
       if(ra<=1.45) go to 6
@@ -62,8 +68,8 @@
 9     f=57.87-(18.2*alog(ra-1.016))
       go to 13
 12    f=40.69-(8.25*alog(ra-1.905))
-13    c=8.73*exp(-0.1117*fo)
-      fr=(fo/100.)*f+(1.0-c)
+13    c=8.73*exp(-0.1117*prev_ffmc)
+      fr=(prev_ffmc/100.)*f+(1.0-c)
       if(fr>=0.) go to 150
       fr=0.0
 150   wmo=101.-fr
@@ -84,52 +90,49 @@
 32    ffm=101.
       go to 34
 33    ffm=0.0
-!
+
 !     duff moisture code
-!
 34    if(t+1.1>=0.) go to 41
       t=-1.1
-41    rk=1.894*(t+1.1)*(100.-h)*(el(j)*0.0001)
+41    rk=1.894*(t+1.1)*(100.-h)*(day_length_dmc(j)*0.0001)
 43    if(r>1.5) go to 45
-      pr=po
+      pr=prev_dmc
       go to 250
 45    ra=r
       rw=0.92*ra-1.27
-      wmi=20.0+280./exp(0.023*po)
-      if(po<=33.) go to 50
-      if(po-65.) 52,52,53
-50    b=100./(0.5+0.3*po)
+      wmi=20.0+280./exp(0.023*prev_dmc)
+      if(prev_dmc<=33.) go to 50
+      if(prev_dmc-65.) 52,52,53
+50    b=100./(0.5+0.3*prev_dmc)
       go to 55
-52    b=14.-1.3*alog(po)
+52    b=14.-1.3*alog(prev_dmc)
       go to 55
-53    b=6.2*alog(po)-17.2
+53    b=6.2*alog(prev_dmc)-17.2
 55    wmr=wmi+(1000.*rw)/(48.77+b*rw)
       pr=43.43*(5.6348-alog(wmr-20.))
 250   if(pr>=0.) go to 61
       pr=0.0
 61    dmc=pr+rk
-!
+
 !     drought code
-!
       if(t+2.8>=0.) go to 65
       t=-2.8
-65    pe=(.36*(t+2.8)+fl(j))/2.
+65    pe=(.36*(t+2.8)+day_length_dc(j))/2.
       if(r<=2.8) go to 300
       ra=r
       rw=0.83*ra-1.27
-      smi=800.*exp(-dot/400.)
-      dr=dot-400.*alog(1.+((3.937*rw)/smi))
+      smi=800.*exp(-prev_dc/400.)
+      dr=prev_dc-400.*alog(1.+((3.937*rw)/smi))
       if(dr>0.) go to 83
       dr=0.0
 83    dc=dr+pe
       go to 350
-300   dr=dot
+300   dr=prev_dc
       go to 83
 350   if(dc>=0.) go to 85
       dc=0.0
-!
+
 !     initial spread index, buildup index, fire weather index
-!
 85    fm=101.-ffm
       sf=19.1152*exp(-0.1386*fm)*(1.+fm**4.65/7950000.)
       si=sf*exp(0.05039*w)
@@ -156,9 +159,9 @@
       ifwi=fwi+0.5
       write(*,1001) j,i,tx,ih,iw,rain,iffm,idmc,idc,isi,ibui,ifwi
 1001  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
-      fo=ffm
-      po=dmc
-      dot=dc
+      prev_ffmc=ffm
+      prev_dmc=dmc
+      prev_dc=dc
 25    continue
 2000  stop
       end
