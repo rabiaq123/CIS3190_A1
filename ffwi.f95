@@ -5,10 +5,13 @@
 !     reads data and prints out in metric units.
       implicit none
 
-      real :: prev_ffmc, prev_dmc, prev_dc, r, rain, f, fr, ra, wmo, ed, ew, wm, z, x, ffm, t, tx 
+      real :: prev_ffmc, prev_dmc, prev_dc, noon_rain, rain, f, fr, ra, wmo, ed, ew, wm, z, x, ffm, noon_temp, temp 
       real :: rk, pr, rw, wmi, b, wmr, dmc, pe
       real :: smi, dr, fm, sf, si, bui, p, cc, bb, sl, fwi, c, dc
-      integer :: j, starting_month, l, i, days_of_data, idays, days_in_month, ih, h, iw, w, iffm, idmc, idc, isi, ibui, ifwi
+      integer :: j, l, i
+      integer :: start_month, days_of_data, idays, days_in_month, noon_humidity, humidity, noon_wind, wind
+      integer :: iffm, idmc, idc, isi
+      integer :: ibui, ifwi
       integer, dimension(12) :: len_month
       real, dimension(12) :: day_length_dmc, day_length_dc
 
@@ -34,11 +37,11 @@
 
 !     read initial values of ffmc, dmc, dc, starting month, and
 !     # of days weather data is provided that month.
-      read(*,102) prev_ffmc, prev_dmc, prev_dc, starting_month, days_of_data
-      do 25 j=starting_month,12
+      read(*,102) prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
+      do 25 j=start_month,12
       days_in_month=len_month(j)
-      1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
-      if(j==starting_month) go to 304
+1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
+      if(j==start_month) go to 304
       idays=1
       go to 302
 304   idays=len_month(j)-days_of_data+1
@@ -47,20 +50,20 @@
 302   l=0
       do 25 i=idays,days_in_month
       l=l+1
-      read(*,101,end=2000) t,ih,iw,r
+      read(*,101,end=2000) noon_temp,noon_humidity,noon_wind,noon_rain
       if(l/=1) go to 301
       write(*,1002)
-301   tx=t
-      h=ih
-      w=iw
-      rain=r
+301   temp=noon_temp
+      humidity=noon_humidity
+      wind=noon_wind
+      rain=noon_rain
 
 !     fine fuel moisture code
-      if(r>0.5) go to 10
-      r=0.0
+      if(noon_rain>0.5) go to 10
+      noon_rain=0.0
       fr=prev_ffmc
       go to 150
-10    ra=r
+10    ra=noon_rain
       if(ra<=1.45) go to 6
       if(ra-5.75) 9,9,12
 6     f=123.85-(55.6*alog(ra+1.016))
@@ -73,14 +76,14 @@
       if(fr>=0.) go to 150
       fr=0.0
 150   wmo=101.-fr
-      ed=0.942*(h**0.679)+(11.*exp((h-100.)/10.))+0.18*(21.1-t)*(1.-1./exp(0.115*h))
+      ed=0.942*(humidity**0.679)+(11.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
       if(wmo-ed) 26,27,28
-26    ew=0.618*(h**0.753)+(10.*exp((h-100.)/10.))+0.18*(21.1-t)*(1.-1./exp(0.115*h))
+26    ew=0.618*(humidity**0.753)+(10.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
       if(wmo<ew) go to 29
 27    wm=wmo
       go to 30
-28    z=0.424*(1.-(h/100.)**1.7)+(0.0694*(w**0.5))*(1.-(h/100.)**8)
-      x=z*(0.463*(exp(0.0365*t)))
+28    z=0.424*(1.-(humidity/100.)**1.7)+(0.0694*(wind**0.5))*(1.-(humidity/100.)**8)
+      x=z*(0.463*(exp(0.0365*noon_temp)))
       wm=ed+(wmo-ed)/10.**x
       go to 30
 29    wm=ew-(ew-wmo)/1.9953
@@ -92,13 +95,13 @@
 33    ffm=0.0
 
 !     duff moisture code
-34    if(t+1.1>=0.) go to 41
-      t=-1.1
-41    rk=1.894*(t+1.1)*(100.-h)*(day_length_dmc(j)*0.0001)
-43    if(r>1.5) go to 45
+34    if(noon_temp+1.1>=0.) go to 41
+      noon_temp=-1.1
+41    rk=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(j)*0.0001)
+43    if(noon_rain>1.5) go to 45
       pr=prev_dmc
       go to 250
-45    ra=r
+45    ra=noon_rain
       rw=0.92*ra-1.27
       wmi=20.0+280./exp(0.023*prev_dmc)
       if(prev_dmc<=33.) go to 50
@@ -115,11 +118,11 @@
 61    dmc=pr+rk
 
 !     drought code
-      if(t+2.8>=0.) go to 65
-      t=-2.8
-65    pe=(.36*(t+2.8)+day_length_dc(j))/2.
-      if(r<=2.8) go to 300
-      ra=r
+      if(noon_temp+2.8>=0.) go to 65
+      noon_temp=-2.8
+65    pe=(.36*(noon_temp+2.8)+day_length_dc(j))/2.
+      if(noon_rain<=2.8) go to 300
+      ra=noon_rain
       rw=0.83*ra-1.27
       smi=800.*exp(-prev_dc/400.)
       dr=prev_dc-400.*alog(1.+((3.937*rw)/smi))
@@ -135,7 +138,7 @@
 !     initial spread index, buildup index, fire weather index
 85    fm=101.-ffm
       sf=19.1152*exp(-0.1386*fm)*(1.+fm**4.65/7950000.)
-      si=sf*exp(0.05039*w)
+      si=sf*exp(0.05039*wind)
 93    bui=(0.8*dc*dmc)/(dmc+0.4*dc)
       if(bui>=dmc) go to 95
       p=(dmc-bui)/dmc
@@ -157,7 +160,7 @@
       isi=si+0.5
       ibui=bui+0.5
       ifwi=fwi+0.5
-      write(*,1001) j,i,tx,ih,iw,rain,iffm,idmc,idc,isi,ibui,ifwi
+      write(*,1001) j,i,temp,noon_humidity,noon_wind,rain,iffm,idmc,idc,isi,ibui,ifwi
 1001  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
       prev_ffmc=ffm
       prev_dmc=dmc
