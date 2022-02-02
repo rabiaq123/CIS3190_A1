@@ -7,7 +7,7 @@
 
       real :: prev_ffmc, prev_dmc, prev_dc, noon_rain, rain, rain_func_ffmc, post_rain_ffmc, prev_rain 
       real :: prev_mc, drying_emc, wetting_emc, curr_final_mc, intermediate_drying_rate, log_drying_rate, curr_ffmc, noon_temp, temp 
-      real :: rk, pr, rw, wmi, b, wmr, dmc, pe
+      real :: drying_factor_dmc, post_rain_dmc, effective_rain_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, dmc, pe
       real :: smi, dr, fm, sf, si, bui, p, cc, bb, sl, fwi, correction_term_ffmc, dc
       integer :: j, l, i
       integer :: start_month, days_of_data, idays, days_in_month, noon_humidity, humidity, noon_wind, wind
@@ -98,25 +98,25 @@
 !     duff moisture code
 34    if(noon_temp+1.1>=0.) go to 41
       noon_temp=-1.1
-41    rk=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(j)*0.0001)
+41    drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(j)*0.0001)
 43    if(noon_rain>1.5) go to 45
-      pr=prev_dmc
+      post_rain_dmc=prev_dmc
       go to 250
 45    prev_rain=noon_rain
-      rw=0.92*prev_rain-1.27
-      wmi=20.0+280./exp(0.023*prev_dmc)
+      effective_rain_dmc=0.92*prev_rain-1.27
+      mc_dmc=20.0+280./exp(0.023*prev_dmc)
       if(prev_dmc<=33.) go to 50
       if(prev_dmc-65.) 52,52,53
-50    b=100./(0.5+0.3*prev_dmc)
+50    slope_func_dmc=100./(0.5+0.3*prev_dmc)
       go to 55
-52    b=14.-1.3*alog(prev_dmc)
+52    slope_func_dmc=14.-1.3*alog(prev_dmc)
       go to 55
-53    b=6.2*alog(prev_dmc)-17.2
-55    wmr=wmi+(1000.*rw)/(48.77+b*rw)
-      pr=43.43*(5.6348-alog(wmr-20.))
-250   if(pr>=0.) go to 61
-      pr=0.0
-61    dmc=pr+rk
+53    slope_func_dmc=6.2*alog(prev_dmc)-17.2
+55    mc_post_rain_dmc=mc_dmc+(1000.*effective_rain_dmc)/(48.77+slope_func_dmc*effective_rain_dmc)
+      post_rain_dmc=43.43*(5.6348-alog(mc_post_rain_dmc-20.))
+250   if(post_rain_dmc>=0.) go to 61
+      post_rain_dmc=0.0
+61    dmc=post_rain_dmc+drying_factor_dmc
 
 !     drought code
       if(noon_temp+2.8>=0.) go to 65
@@ -124,9 +124,9 @@
 65    pe=(.36*(noon_temp+2.8)+day_length_dc(j))/2.
       if(noon_rain<=2.8) go to 300
       prev_rain=noon_rain
-      rw=0.83*prev_rain-1.27
+      effective_rain_dmc=0.83*prev_rain-1.27
       smi=800.*exp(-prev_dc/400.)
-      dr=prev_dc-400.*alog(1.+((3.937*rw)/smi))
+      dr=prev_dc-400.*alog(1.+((3.937*effective_rain_dmc)/smi))
       if(dr>0.) go to 83
       dr=0.0
 83    dc=dr+pe
