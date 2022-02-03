@@ -7,7 +7,7 @@
 
       ! variables being read from input
       real :: prev_ffmc, prev_dmc, prev_dc, noon_rain, noon_temp
-      integer :: start_month, days_of_data, noon_humidity, noon_wind, humidity, wind
+      integer :: start_month, days_of_data, humidity, wind
       integer, dimension(12) :: len_month
       real, dimension(12) :: day_length_dmc, day_length_dc
       ! variables used for calculations
@@ -58,12 +58,10 @@
 302   l=0
       do 25 date=idays,days_in_month
       l=l+1
-      read(*,101,end=2000) noon_temp,noon_humidity,noon_wind,noon_rain
+      read(*,101,end=2000) noon_temp,humidity,wind,noon_rain
       if(l/=1) go to 301
       write(*,1002)
 301   temp=noon_temp
-      humidity=noon_humidity
-      wind=noon_wind
       rain=noon_rain
 
 !     fine fuel moisture code
@@ -171,7 +169,7 @@
       int_isi=isi+0.5
       int_bui=bui+0.5
       int_fwi=fwi+0.5
-      write(*,1001) month,date,temp,noon_humidity,noon_wind,rain,int_ffmc,int_dmc,int_dc,int_isi,int_bui,int_fwi
+      write(*,1001) month,date,temp,humidity,wind,rain,int_ffmc,int_dmc,int_dc,int_isi,int_bui,int_fwi
 1001  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
       prev_ffmc=curr_ffmc
       prev_dmc=dmc
