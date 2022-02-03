@@ -5,20 +5,23 @@
 !     reads data and prints out in metric units.
       implicit none
 
-      real :: prev_ffmc, prev_dmc, prev_dc, noon_rain, rain, rain_func_ffmc, post_rain_ffmc, prev_rain 
-      real :: prev_mc, drying_emc, wetting_emc, curr_final_mc, intermediate_drying_rate, log_drying_rate, curr_ffmc, noon_temp, temp 
-      real :: drying_factor_dmc, post_rain_dmc, effective_rain_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, dmc 
-      real :: drying_factor_dc
-      real :: moisture_equivalent_dc, post_rain_dc, curr_ff_mc, ff_moisture_func, isi, bui, fix_bui_ratio_func 
-      real :: fix_bui_dmc_func, intermediate_fwi, log_final_fwi, fwi
-      real :: correction_term_ffmc
-      real :: dc
-      integer :: j, l, i
-      integer :: start_month, days_of_data, idays, days_in_month, noon_humidity, humidity, noon_wind, wind
-      integer :: int_ffmc, int_dmc, int_dc, int_isi
-      integer :: int_bui, int_fwi
+      ! variables being read from input
+      real :: prev_ffmc, prev_dmc, prev_dc, noon_rain, noon_temp
+      integer :: start_month, days_of_data, noon_humidity, noon_wind, humidity, wind
       integer, dimension(12) :: len_month
       real, dimension(12) :: day_length_dmc, day_length_dc
+      ! variables used for calculations
+      real :: rain_func_ffmc, post_rain_ffmc, prev_rain 
+      real :: prev_mc, drying_emc, wetting_emc, curr_final_mc, intermediate_drying_rate, log_drying_rate, curr_ffmc
+      real :: drying_factor_dmc, post_rain_dmc, effective_rain_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, dmc 
+      real :: drying_factor_dc, moisture_equivalent_dc, post_rain_dc
+      real :: curr_ff_mc, ff_moisture_func, isi, bui, fix_bui_ratio_func 
+      real :: fix_bui_dmc_func, intermediate_fwi, log_final_fwi, fwi
+      real :: correction_term_ffmc, dc
+      integer :: l, idays, days_in_month
+      ! variables used for final output
+      real :: temp, rain
+      integer :: month, date, int_ffmc, int_dmc, int_dc, int_isi, int_bui, int_fwi
 
       write(*,1004)
 1004  format(2x,'Forest Fire Weather Index')
@@ -36,24 +39,24 @@
 !     INPUT FILE READING 
 
 !     read length of months and day-length factors
-      do 20 j=1,12
-      read(*,100) len_month(j), day_length_dmc(j), day_length_dc(j)
+      do 20 month=1,12
+      read(*,100) len_month(month), day_length_dmc(month), day_length_dc(month)
 20    continue
 
 !     read initial values of ffmc, dmc, dc, starting month, and
 !     # of days weather data is provided that month.
       read(*,102) prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
-      do 25 j=start_month,12
-      days_in_month=len_month(j)
+      do 25 month=start_month,12
+      days_in_month=len_month(month)
 1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
-      if(j==start_month) go to 304
+      if(month==start_month) go to 304
       idays=1
       go to 302
-304   idays=len_month(j)-days_of_data+1
+304   idays=len_month(month)-days_of_data+1
 
 !     read daily weather data
 302   l=0
-      do 25 i=idays,days_in_month
+      do 25 date=idays,days_in_month
       l=l+1
       read(*,101,end=2000) noon_temp,noon_humidity,noon_wind,noon_rain
       if(l/=1) go to 301
@@ -102,7 +105,7 @@
 !     duff moisture code
 34    if(noon_temp+1.1>=0.) go to 41
       noon_temp=-1.1
-41    drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(j)*0.0001)
+41    drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
 43    if(noon_rain>1.5) go to 45
       post_rain_dmc=prev_dmc
       go to 250
@@ -125,7 +128,7 @@
 !     drought code
       if(noon_temp+2.8>=0.) go to 65
       noon_temp=-2.8
-65    drying_factor_dc=(.36*(noon_temp+2.8)+day_length_dc(j))/2.
+65    drying_factor_dc=(.36*(noon_temp+2.8)+day_length_dc(month))/2.
       if(noon_rain<=2.8) go to 300
       prev_rain=noon_rain
       effective_rain_dmc=0.83*prev_rain-1.27
@@ -168,7 +171,7 @@
       int_isi=isi+0.5
       int_bui=bui+0.5
       int_fwi=fwi+0.5
-      write(*,1001) j,i,temp,noon_humidity,noon_wind,rain,int_ffmc,int_dmc,int_dc,int_isi,int_bui,int_fwi
+      write(*,1001) month,date,temp,noon_humidity,noon_wind,rain,int_ffmc,int_dmc,int_dc,int_isi,int_bui,int_fwi
 1001  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
       prev_ffmc=curr_ffmc
       prev_dmc=dmc
