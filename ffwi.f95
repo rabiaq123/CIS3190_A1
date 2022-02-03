@@ -7,8 +7,9 @@
 
       real :: prev_ffmc, prev_dmc, prev_dc, noon_rain, rain, rain_func_ffmc, post_rain_ffmc, prev_rain 
       real :: prev_mc, drying_emc, wetting_emc, curr_final_mc, intermediate_drying_rate, log_drying_rate, curr_ffmc, noon_temp, temp 
-      real :: drying_factor_dmc, post_rain_dmc, effective_rain_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, dmc, pe
-      real :: smi, dr, fm, sf, si, bui, p, cc, bb, sl, fwi, correction_term_ffmc, dc
+      real :: drying_factor_dmc, post_rain_dmc, effective_rain_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, dmc 
+      real :: drying_factor_dc
+      real :: moisture_equivalent_dc, post_rain_dc, fm, sf, si, bui, p, cc, bb, sl, fwi, correction_term_ffmc, dc
       integer :: j, l, i
       integer :: start_month, days_of_data, idays, days_in_month, noon_humidity, humidity, noon_wind, wind
       integer :: iffm, idmc, idc, isi
@@ -121,17 +122,17 @@
 !     drought code
       if(noon_temp+2.8>=0.) go to 65
       noon_temp=-2.8
-65    pe=(.36*(noon_temp+2.8)+day_length_dc(j))/2.
+65    drying_factor_dc=(.36*(noon_temp+2.8)+day_length_dc(j))/2.
       if(noon_rain<=2.8) go to 300
       prev_rain=noon_rain
       effective_rain_dmc=0.83*prev_rain-1.27
-      smi=800.*exp(-prev_dc/400.)
-      dr=prev_dc-400.*alog(1.+((3.937*effective_rain_dmc)/smi))
-      if(dr>0.) go to 83
-      dr=0.0
-83    dc=dr+pe
+      moisture_equivalent_dc=800.*exp(-prev_dc/400.)
+      post_rain_dc=prev_dc-400.*alog(1.+((3.937*effective_rain_dmc)/moisture_equivalent_dc))
+      if(post_rain_dc>0.) go to 83
+      post_rain_dc=0.0
+83    dc=post_rain_dc+drying_factor_dc
       go to 350
-300   dr=prev_dc
+300   post_rain_dc=prev_dc
       go to 83
 350   if(dc>=0.) go to 85
       dc=0.0
