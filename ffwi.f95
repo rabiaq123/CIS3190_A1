@@ -7,18 +7,25 @@
 
       ! variables being read from input
       real :: prev_ffmc, prev_dmc, prev_dc, noon_rain, noon_temp
-      integer :: start_month, days_of_data, humidity, wind
+      integer :: start_month, days_of_data, days_in_month, humidity, wind
       integer, dimension(12) :: len_month
       real, dimension(12) :: day_length_dmc, day_length_dc
-      ! variables used for calculations
-      real :: rain_func_ffmc, post_rain_ffmc, prev_rain 
-      real :: prev_mc, drying_emc, wetting_emc, curr_final_mc, intermediate_drying_rate, log_drying_rate, curr_ffmc
-      real :: drying_factor_dmc, post_rain_dmc, effective_rain_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, dmc 
-      real :: drying_factor_dc, moisture_equivalent_dc, post_rain_dc
-      real :: curr_ff_mc, ff_moisture_func, isi, bui, fix_bui_ratio_func 
-      real :: fix_bui_dmc_func, intermediate_fwi, log_final_fwi, fwi
-      real :: correction_term_ffmc, dc
-      integer :: l, idays, days_in_month
+      ! non-specific variables
+      integer :: l, data_start_date
+      real :: prev_rain, effective_rain
+      ! FFMC variables
+      real :: ffmc, rain_func_ffmc, post_rain_ffmc, prev_mc, drying_emc, wetting_emc, curr_final_mc
+      real :: intermediate_drying_rate, log_drying_rate, correction_term_ffmc
+      ! DMC variables
+      real :: dmc, drying_factor_dmc, post_rain_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc
+      ! DC variables
+      real :: dc, drying_factor_dc, moisture_equivalent_dc, post_rain_dc
+      ! FWI, ISI, BUI variables
+      real :: isi, bui, fwi, curr_ff_mc, ff_moisture_func, fix_bui_ratio_func, fix_bui_dmc_func
+      real :: intermediate_fwi, log_final_fwi
+
+
+
       ! variables used for final output
       real :: temp, rain
       integer :: month, date, int_ffmc, int_dmc, int_dc, int_isi, int_bui, int_fwi
@@ -50,13 +57,13 @@
       days_in_month=len_month(month)
 1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
       if(month==start_month) go to 304
-      idays=1
+      data_start_date=1
       go to 302
-304   idays=len_month(month)-days_of_data+1
+304   data_start_date=len_month(month)-days_of_data+1
 
 !     read daily weather data
 302   l=0
-      do 25 date=idays,days_in_month
+      do 25 date=data_start_date,days_in_month
       l=l+1
       read(*,101,end=2000) noon_temp,humidity,wind,noon_rain
       if(l/=1) go to 301
@@ -93,12 +100,12 @@
       curr_final_mc=drying_emc+(prev_mc-drying_emc)/10.**log_drying_rate
       go to 30
 29    curr_final_mc=wetting_emc-(wetting_emc-prev_mc)/1.9953
-30    curr_ffmc=101.-curr_final_mc
-      if(curr_ffmc>101.) go to 32
-      if(curr_ffmc) 33,34,34
-32    curr_ffmc=101.
+30    ffmc=101.-curr_final_mc
+      if(ffmc>101.) go to 32
+      if(ffmc) 33,34,34
+32    ffmc=101.
       go to 34
-33    curr_ffmc=0.0
+33    ffmc=0.0
 
 !     duff moisture code
 34    if(noon_temp+1.1>=0.) go to 41
@@ -108,7 +115,7 @@
       post_rain_dmc=prev_dmc
       go to 250
 45    prev_rain=noon_rain
-      effective_rain_dmc=0.92*prev_rain-1.27
+      effective_rain=0.92*prev_rain-1.27
       mc_dmc=20.0+280./exp(0.023*prev_dmc)
       if(prev_dmc<=33.) go to 50
       if(prev_dmc-65.) 52,52,53
@@ -117,7 +124,7 @@
 52    slope_func_dmc=14.-1.3*alog(prev_dmc)
       go to 55
 53    slope_func_dmc=6.2*alog(prev_dmc)-17.2
-55    mc_post_rain_dmc=mc_dmc+(1000.*effective_rain_dmc)/(48.77+slope_func_dmc*effective_rain_dmc)
+55    mc_post_rain_dmc=mc_dmc+(1000.*effective_rain)/(48.77+slope_func_dmc*effective_rain)
       post_rain_dmc=43.43*(5.6348-alog(mc_post_rain_dmc-20.))
 250   if(post_rain_dmc>=0.) go to 61
       post_rain_dmc=0.0
@@ -129,9 +136,9 @@
 65    drying_factor_dc=(.36*(noon_temp+2.8)+day_length_dc(month))/2.
       if(noon_rain<=2.8) go to 300
       prev_rain=noon_rain
-      effective_rain_dmc=0.83*prev_rain-1.27
+      effective_rain=0.83*prev_rain-1.27
       moisture_equivalent_dc=800.*exp(-prev_dc/400.)
-      post_rain_dc=prev_dc-400.*alog(1.+((3.937*effective_rain_dmc)/moisture_equivalent_dc))
+      post_rain_dc=prev_dc-400.*alog(1.+((3.937*effective_rain)/moisture_equivalent_dc))
       if(post_rain_dc>0.) go to 83
       post_rain_dc=0.0
 83    dc=post_rain_dc+drying_factor_dc
@@ -142,7 +149,7 @@
       dc=0.0
 
 !     initial spread index, buildup index, fire weather index
-85    curr_ff_mc=101.-curr_ffmc
+85    curr_ff_mc=101.-ffmc
       ff_moisture_func=19.1152*exp(-0.1386*curr_ff_mc)*(1.+curr_ff_mc**4.65/7950000.)
       isi=ff_moisture_func*exp(0.05039*wind)
 93    bui=(0.8*dc*dmc)/(dmc+0.4*dc)
@@ -162,16 +169,17 @@
       fwi=exp(log_final_fwi)
       go to 400
 98    fwi=intermediate_fwi
+
 !     convert values to integer
 400   int_dc=dc+0.5
-      int_ffmc=curr_ffmc+0.5
+      int_ffmc=ffmc+0.5
       int_dmc=dmc+0.5
       int_isi=isi+0.5
       int_bui=bui+0.5
       int_fwi=fwi+0.5
       write(*,1001) month,date,temp,humidity,wind,rain,int_ffmc,int_dmc,int_dc,int_isi,int_bui,int_fwi
 1001  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
-      prev_ffmc=curr_ffmc
+      prev_ffmc=ffmc
       prev_dmc=dmc
       prev_dc=dc
 25    continue
