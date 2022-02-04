@@ -31,13 +31,13 @@ subroutine read_file(fname)
     implicit none 
     
     character (len=20), intent(in) :: fname
-    integer :: month
+    integer :: stat
 
     ! variables used for calculations
     integer, dimension(12) :: len_month
     real, dimension(12) :: day_length_dmc, day_length_dc
-    real :: prev_ffmc, prev_dmc, prev_dc
-    integer :: start_month, days_of_data
+    real :: prev_ffmc, prev_dmc, prev_dc, noon_temp, noon_rain
+    integer :: month, start_month, days_of_data, humidity, wind
 
     ! opening file to read; unit is used to represent file - can be anything but the value of 6
     open(unit=20,file=fname,status='old',action='read')
@@ -46,18 +46,21 @@ subroutine read_file(fname)
     do month=1,12
         read(20,'(i2,f4.1,f4.1)') len_month(month), day_length_dmc(month), day_length_dc(month)
     end do
+
     ! read initial moisture code values, starting month, and # of days weather data is provided that month
     read(20,'(f4.1,f4.1,f5.1,i2,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
 
-    ! close file afterfile reading is complete
-    close(20, status='keep')
-
-    ! ouput values read in to ensure file reading is working properly
+    ! read (and write) daily weather data
     do month=1,12
         write(*,'(2x,i2,2x,f4.1,2x,f4.1)') len_month(month), day_length_dmc(month), day_length_dc(month)
     end do 
     write(*,'(2x,f4.1,2x,f4.1,2x,f5.1,2x,i2,2x,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
-
+    do
+        read(20,'(f4.1,i4,i4,f4.1)',IOSTAT=stat) noon_temp, humidity, wind, noon_rain
+        if (IS_IOSTAT_END(stat)) exit
+        write(*,'(2x,f4.1,2x,i4,2x,i4,2x,f4.1)') noon_temp, humidity, wind, noon_rain
+    end do
+    close(20, status='keep')
 
     return
 end subroutine
