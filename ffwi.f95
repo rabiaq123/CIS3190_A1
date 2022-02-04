@@ -63,17 +63,5 @@ subroutine read_file(fname)
     ! close file after all data has been stored
     close(20, status='keep')
 
-    ! write daily weather data
-    write(*,*) 'SECTION 1'
-    do month=1,12
-        write(*,'(2x,i2,2x,f4.1,2x,f4.1)') len_month(month), day_length_dmc(month), day_length_dc(month)
-    end do 
-    write(*,*) 'SECTION 2'
-    write(*,'(2x,f4.1,2x,f4.1,2x,f5.1,2x,i2,2x,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
-    write(*,*) 'SECTION 3'
-    do index = 1, num_daily_entries
-        write(*,'(2x,f4.1,2x,i4,2x,i4,2x,f4.1)') temp_arr(index), humidity_arr(index), wind_arr(index), rain_arr(index)
-    end do
-
     return
 end subroutine
