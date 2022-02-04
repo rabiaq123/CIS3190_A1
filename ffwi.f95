@@ -51,13 +51,15 @@ subroutine read_file(fname)
     read(20,'(f4.1,f4.1,f5.1,i2,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
 
     ! read (and write) daily weather data
+    write(*,*) 'SECTION 1'
     do month=1,12
         write(*,'(2x,i2,2x,f4.1,2x,f4.1)') len_month(month), day_length_dmc(month), day_length_dc(month)
     end do 
+    write(*,*) 'SECTION 2'
     write(*,'(2x,f4.1,2x,f4.1,2x,f5.1,2x,i2,2x,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
-    do
+    write(*,*) 'SECTION 3'
+    do while (IS_IOSTAT_END(stat) .neqv. .true.)
         read(20,'(f4.1,i4,i4,f4.1)',IOSTAT=stat) noon_temp, humidity, wind, noon_rain
-        if (IS_IOSTAT_END(stat)) exit
         write(*,'(2x,f4.1,2x,i4,2x,i4,2x,f4.1)') noon_temp, humidity, wind, noon_rain
     end do
     close(20, status='keep')
