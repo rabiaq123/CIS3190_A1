@@ -31,13 +31,15 @@ subroutine read_file(fname)
     implicit none 
     
     character (len=20), intent(in) :: fname
-    integer :: stat
+    integer :: stat, num_daily_entries, index = 1
 
     ! variables used for calculations
     integer, dimension(12) :: len_month
     real, dimension(12) :: day_length_dmc, day_length_dc
-    real :: prev_ffmc, prev_dmc, prev_dc, noon_temp, noon_rain
-    integer :: month, start_month, days_of_data, humidity, wind
+    real :: prev_ffmc, prev_dmc, prev_dc
+    integer :: month, start_month, days_of_data
+    real, dimension(365) :: temp_arr, rain_arr
+    integer, dimension(365) :: humidity_arr, wind_arr
 
     ! opening file to read; unit is used to represent file - can be anything but the value of 6
     open(unit=20,file=fname,status='old',action='read')
@@ -50,7 +52,18 @@ subroutine read_file(fname)
     ! read initial moisture code values, starting month, and # of days weather data is provided that month
     read(20,'(f4.1,f4.1,f5.1,i2,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
 
-    ! read (and write) daily weather data
+    ! read daily weather data 
+    do
+        read(20,'(f4.1,i4,i4,f4.1)',IOSTAT=stat) temp_arr(index), humidity_arr(index), wind_arr(index), rain_arr(index)
+        if (IS_IOSTAT_END(stat)) exit
+        index = index + 1
+    end do
+    num_daily_entries = index-1
+
+    ! close file after all data has been stored
+    close(20, status='keep')
+
+    ! write daily weather data
     write(*,*) 'SECTION 1'
     do month=1,12
         write(*,'(2x,i2,2x,f4.1,2x,f4.1)') len_month(month), day_length_dmc(month), day_length_dc(month)
@@ -58,11 +71,9 @@ subroutine read_file(fname)
     write(*,*) 'SECTION 2'
     write(*,'(2x,f4.1,2x,f4.1,2x,f5.1,2x,i2,2x,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
     write(*,*) 'SECTION 3'
-    do while (IS_IOSTAT_END(stat) .neqv. .true.)
-        read(20,'(f4.1,i4,i4,f4.1)',IOSTAT=stat) noon_temp, humidity, wind, noon_rain
-        write(*,'(2x,f4.1,2x,i4,2x,i4,2x,f4.1)') noon_temp, humidity, wind, noon_rain
+    do index = 1, num_daily_entries
+        write(*,'(2x,f4.1,2x,i4,2x,i4,2x,f4.1)') temp_arr(index), humidity_arr(index), wind_arr(index), rain_arr(index)
     end do
-    close(20, status='keep')
 
     return
 end subroutine
