@@ -129,25 +129,22 @@ subroutine allInfo()
       dmc=post_rain_dmc+drying_factor_dmc
 
 !     drought code
-      if(noon_temp+2.8>=0.) go to 65
-      noon_temp=-2.8
-65    drying_factor_dc=(.36*(noon_temp+2.8)+day_length_dc(month))/2.
-      if(noon_rain<=2.8) go to 300
-      prev_rain=noon_rain
-      effective_rain=0.83*prev_rain-1.27
-      moisture_equivalent_dc=800.*exp(-prev_dc/400.)
-      post_rain_dc=prev_dc-400.*alog(1.+((3.937*effective_rain)/moisture_equivalent_dc))
-      if(post_rain_dc>0.) go to 83
-      post_rain_dc=0.0
-83    dc=post_rain_dc+drying_factor_dc
-      go to 350
-300   post_rain_dc=prev_dc
-      go to 83
-350   if(dc>=0.) go to 85
-      dc=0.0
-
+      if(noon_temp+2.8<0.) noon_temp=-2.8
+      drying_factor_dc=(.36*(noon_temp+2.8)+day_length_dc(month))/2.
+      if(noon_rain<=2.8) then
+            post_rain_dc=prev_dc
+      else 
+            prev_rain=noon_rain
+            effective_rain=0.83*prev_rain-1.27
+            moisture_equivalent_dc=800.*exp(-prev_dc/400.)
+            post_rain_dc=prev_dc-400.*alog(1.+((3.937*effective_rain)/moisture_equivalent_dc))
+            if(post_rain_dc<=0.) post_rain_dc=0.0
+      end if
+      dc=post_rain_dc+drying_factor_dc
+      if(dc<0.) dc=0.0
+      
 !     initial spread index, buildup index, fire weather index
-85    curr_ff_mc=101.-ffmc
+      curr_ff_mc=101.-ffmc
       ff_moisture_func=19.1152*exp(-0.1386*curr_ff_mc)*(1.+curr_ff_mc**4.65/7950000.)
       isi=ff_moisture_func*exp(0.05039*wind)
 93    bui=(0.8*dc*dmc)/(dmc+0.4*dc)
