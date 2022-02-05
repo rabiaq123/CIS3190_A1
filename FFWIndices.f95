@@ -85,7 +85,7 @@ subroutine allInfo()
             noon_rain=0.0
             post_rain_ffmc=prev_ffmc
       end if
-      
+
       prev_mc=101.-post_rain_ffmc
       drying_emc=0.942*(humidity**0.679)+(11.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
 
@@ -101,14 +101,14 @@ subroutine allInfo()
       end if 
 
       ffmc=101.-curr_final_mc
-      if(ffmc>101.) go to 32
-      if(ffmc) 33,34,34
-32    ffmc=101.
-      go to 34
-33    ffmc=0.0
+      if(ffmc>101.) then
+            ffmc=101.
+      else 
+            if(ffmc < 0) ffmc=0.0
+      end if
 
 !     duff moisture code
-34    if(noon_temp+1.1<0.) noon_temp=-1.1
+      if(noon_temp+1.1<0.) noon_temp=-1.1
       drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
 
       if(noon_rain>1.5) then
