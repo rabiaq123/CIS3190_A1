@@ -82,10 +82,22 @@ subroutine allInfo()
             ! drought code
             call dc_calc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain)
 
+
+
+
             ! initial spread index, buildup index, fire weather index
-            curr_ff_mc=101.-ffmc
-            ff_moisture_func=19.1152*exp(-0.1386*curr_ff_mc)*(1.+curr_ff_mc**4.65/7950000.)
-            isi=ff_moisture_func*exp(0.05039*wind)
+
+            ! calculate isi
+            call calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
+            ! receive: wind
+            ! return: isi
+            ! receive and return: ffmc
+            ! temp: curr_ff_mc, ff_moisture_func
+            ! curr_ff_mc=101.-ffmc
+            ! ff_moisture_func=19.1152*exp(-0.1386*curr_ff_mc)*(1.+curr_ff_mc**4.65/7950000.)
+            ! isi=ff_moisture_func*exp(0.05039*wind)
+
+            ! calculate bui
             bui=(0.8*dc*dmc)/(dmc+0.4*dc)
             if(bui<dmc) then
                 ! ratio function to correct BUI when less than DMC
@@ -95,19 +107,22 @@ subroutine allInfo()
                 bui=dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
                 if(bui<0.) bui=0.
             end if
-
             if(bui>80.) then
                 intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
             else 
                 intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
             end if
 
+            ! calculate fwi
             if(intermediate_fwi-1.0<=0.) then
                 fwi=intermediate_fwi
             else 
                 log_final_fwi=2.72*(0.43*alog(intermediate_fwi))**0.647
                 fwi=exp(log_final_fwi)
             end if
+
+
+
 
             ! convert values to integer
             int_dc=dc+0.5
@@ -273,6 +288,26 @@ subroutine dc_calc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev
 
     return 
 end subroutine dc_calc
+
+
+subroutine calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
+    implicit none 
+
+    ! receive: wind
+    ! return: isi
+    ! receive and return: ffmc
+    ! temp: curr_ff_mc, ff_moisture_func
+    integer, intent(in) :: wind 
+    real, intent(out) :: isi 
+    real, intent(inout) :: ffmc
+    real :: curr_ff_mc, ff_moisture_func
+
+    curr_ff_mc=101.-ffmc
+    ff_moisture_func=19.1152*exp(-0.1386*curr_ff_mc)*(1.+curr_ff_mc**4.65/7950000.)
+    isi=ff_moisture_func*exp(0.05039*wind)
+
+    return
+end subroutine calc_isi
 
 
 end module FFWIndices
