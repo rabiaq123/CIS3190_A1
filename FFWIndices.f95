@@ -3,7 +3,7 @@ module FFWIndices
 contains
 
 
-subroutine allInfo(len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
+subroutine perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
                 start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
     implicit none 
 
@@ -17,40 +17,23 @@ subroutine allInfo(len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc
     real, dimension(365), intent(in) :: temp_arr, rain_arr
     integer, dimension(365), intent(in) :: humidity_arr, wind_arr
 
-
     ! variables being read from file
     real :: rain, temp
     integer :: days_in_month, humidity, wind
     ! variables used for final output
     integer :: month, date, int_ffmc, int_dmc, int_dc, int_isi, int_bui, int_fwi
     ! non-specific variables
-    integer :: i = 1, l, data_start_date
+    integer :: i = 1, data_start_date
     real :: prev_rain, effective_rain
     ! FFMC, DMC, DC variables
     real :: ffmc, post_rain_ffmc, curr_final_mc, dmc, dc
     ! FWI, ISI, BUI variables
     real :: isi, bui, fwi, curr_ff_mc, ff_moisture_func
 
-
-!   INPUT VALUE FORMATTING
-
-    ! lengths of months and day-length factors
-100 format(i2,f4.1,f4.1)
-    ! daily weather readings (temp, relative humidity, wind, rain)
-101 format(f4.1,i4,i4,f4.1)
-    ! moisture codes' std starting values, starting month, and # of days data is provided
-102 format(f4.1,f4.1,f5.1,i2,i2)
-
-!   OUTPUT CONTENT FORMATTING
-
     ! header formatting
 13  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
     ! formatting for data to be output to the requested file
 15  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
-
-!   INPUT READING 
-
-write(*,*) 'NUM DAILY ENTRIES: ', num_daily_entries
 
     do month=start_month,12
         days_in_month=len_month(month)
@@ -61,11 +44,9 @@ write(*,*) 'NUM DAILY ENTRIES: ', num_daily_entries
         end if
 
         ! read daily weather data
-        l=0
         do date=data_start_date,days_in_month
-            l=l+1
-            if (i == num_daily_entries + 1) go to 300
-            if(l==1) write(*,13)
+            if (i == num_daily_entries + 1) exit
+            if(date == data_start_date) write(*,13)
             temp=temp_arr(i)
             rain=rain_arr(i)
             humidity=humidity_arr(i)
@@ -103,10 +84,9 @@ write(*,*) 'NUM DAILY ENTRIES: ', num_daily_entries
             prev_dc=dc
         end do
     end do
-300 stop
 
     return
-end subroutine allInfo
+end subroutine perform_calcs
 
 
 subroutine ffmc_calc1(rain, prev_ffmc, prev_rain, post_rain_ffmc)

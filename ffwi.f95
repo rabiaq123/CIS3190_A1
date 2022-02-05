@@ -31,7 +31,7 @@ program ffwi
         write (*,*) 'Invalid input file name. Exiting program...'
     end if 
 
-    call allInfo(len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
+    call perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
                 start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
 
 
