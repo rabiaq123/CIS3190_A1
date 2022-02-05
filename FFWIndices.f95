@@ -17,12 +17,8 @@ subroutine allInfo()
     ! non-specific variables
     integer :: l, data_start_date
     real :: prev_rain, effective_rain
-    ! FFMC variables
-    real :: ffmc, post_rain_ffmc, curr_final_mc
-    ! DMC variables
-    real :: dmc
-    ! DC variables
-    real :: dc
+    ! FFMC, DMC, DC variables
+    real :: ffmc, post_rain_ffmc, curr_final_mc, dmc, dc
     ! FWI, ISI, BUI variables
     real :: isi, bui, fwi, curr_ff_mc, ff_moisture_func
 
@@ -81,15 +77,9 @@ subroutine allInfo()
             ! drought code
             call calc_dc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain)
 
-            ! initial spread index, buildup index, fire weather index
-
-            ! calculate isi
+            ! calculate initial spread index, buildup index, and fire weather index
             call calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
-            
-            ! calculate bui
             call calc_bui(bui, dc, dmc)
-
-            ! calculate fwi
             call calc_fwi(fwi, bui, isi)
 
             ! convert values to integer
@@ -307,6 +297,7 @@ subroutine calc_fwi(fwi, bui, isi)
     else 
         intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
     end if
+    
     if(intermediate_fwi-1.0<=0.) then
         fwi=intermediate_fwi
     else 
