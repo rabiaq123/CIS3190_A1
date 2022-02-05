@@ -31,13 +31,13 @@ subroutine read_file(fname)
     implicit none 
     
     character (len=20), intent(in) :: fname
-    integer :: stat, num_daily_entries, index = 1
+    integer :: stat, index, num_daily_entries
 
     ! variables used for calculations
     integer, dimension(12) :: len_month
     real, dimension(12) :: day_length_dmc, day_length_dc
     real :: prev_ffmc, prev_dmc, prev_dc
-    integer :: month, start_month, days_of_data
+    integer :: start_month, days_of_data
     real, dimension(365) :: temp_arr, rain_arr
     integer, dimension(365) :: humidity_arr, wind_arr
 
@@ -45,14 +45,15 @@ subroutine read_file(fname)
     open(unit=20,file=fname,status='old',action='read')
 
     ! read length of months and day-length factors
-    do month=1,12
-        read(20,'(i2,f4.1,f4.1)') len_month(month), day_length_dmc(month), day_length_dc(month)
+    do index=1,12
+        read(20,'(i2,f4.1,f4.1)') len_month(index), day_length_dmc(index), day_length_dc(index)
     end do
 
     ! read initial moisture code values, starting month, and # of days weather data is provided that month
     read(20,'(f4.1,f4.1,f5.1,i2,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
 
     ! read daily weather data 
+    index = 1
     do
         read(20,'(f4.1,i4,i4,f4.1)',IOSTAT=stat) temp_arr(index), humidity_arr(index), wind_arr(index), rain_arr(index)
         if (IS_IOSTAT_END(stat)) exit
@@ -64,4 +65,4 @@ subroutine read_file(fname)
     close(20, status='keep')
 
     return
-end subroutine
+end subroutine read_file
