@@ -80,20 +80,25 @@ subroutine allInfo()
             call dmc_calc(dmc, month, day_length_dmc, noon_temp, prev_rain, humidity, noon_rain, prev_dmc, effective_rain)
 
             ! drought code
-            if(noon_temp+2.8<0.) noon_temp=-2.8
-            drying_factor_dc=(.36*(noon_temp+2.8)+day_length_dc(month))/2.
-            if(noon_rain<=2.8) then
-                post_rain_dc=prev_dc
-            else 
-                prev_rain=noon_rain
-                effective_rain=0.83*prev_rain-1.27
-                moisture_equivalent_dc=800.*exp(-prev_dc/400.)
-                post_rain_dc=prev_dc-400.*alog(1.+((3.937*effective_rain)/moisture_equivalent_dc))
-                if(post_rain_dc<=0.) post_rain_dc=0.0
-            end if
-            dc=post_rain_dc+drying_factor_dc
-            if(dc<0.) dc=0.0
-                
+            ! receive: noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain
+            ! return: dc
+            ! receive and return: 
+            ! temp: drying_factor_dc, post_rain_dc, moisture_equivalent_dc
+            call dc_calc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain)
+            ! if(noon_temp+2.8<0.) noon_temp=-2.8
+            ! drying_factor_dc=(.36*(noon_temp+2.8)+day_length_dc(month))/2.
+            ! if(noon_rain<=2.8) then
+            !     post_rain_dc=prev_dc
+            ! else 
+            !     prev_rain=noon_rain
+            !     effective_rain=0.83*prev_rain-1.27
+            !     moisture_equivalent_dc=800.*exp(-prev_dc/400.)
+            !     post_rain_dc=prev_dc-400.*alog(1.+((3.937*effective_rain)/moisture_equivalent_dc))
+            !     if(post_rain_dc<=0.) post_rain_dc=0.0
+            ! end if
+            ! dc=post_rain_dc+drying_factor_dc
+            ! if(dc<0.) dc=0.0
+
             ! initial spread index, buildup index, fire weather index
             curr_ff_mc=101.-ffmc
             ff_moisture_func=19.1152*exp(-0.1386*curr_ff_mc)*(1.+curr_ff_mc**4.65/7950000.)
@@ -257,5 +262,37 @@ subroutine dmc_calc(dmc, month, day_length_dmc, noon_temp, prev_rain, humidity, 
     return
 end subroutine dmc_calc
 
+
+subroutine dc_calc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain)
+    implicit none 
+    
+    ! receive: day_length_dc, month, noon_rain, prev_dc
+    ! return: dc
+    ! receive and return: noon_temp, prev_rain, effective_rain
+    ! temp: drying_factor_dc, post_rain_dc, moisture_equivalent_dc
+    integer, intent(in) :: month
+    real, dimension(12), intent(in) :: day_length_dc
+    real, intent(in) :: noon_rain, prev_dc
+    real, intent(out) :: dc
+    real, intent(inout) :: noon_temp, prev_rain, effective_rain
+    real :: drying_factor_dc, post_rain_dc, moisture_equivalent_dc
+
+
+    if(noon_temp+2.8<0.) noon_temp=-2.8
+    drying_factor_dc=(.36*(noon_temp+2.8)+day_length_dc(month))/2.
+    if(noon_rain<=2.8) then
+        post_rain_dc=prev_dc
+    else 
+        prev_rain=noon_rain
+        effective_rain=0.83*prev_rain-1.27
+        moisture_equivalent_dc=800.*exp(-prev_dc/400.)
+        post_rain_dc=prev_dc-400.*alog(1.+((3.937*effective_rain)/moisture_equivalent_dc))
+        if(post_rain_dc<=0.) post_rain_dc=0.0
+    end if
+    dc=post_rain_dc+drying_factor_dc
+    if(dc<0.) dc=0.0
+
+    return 
+end subroutine dc_calc
 
 end module FFWIndices
