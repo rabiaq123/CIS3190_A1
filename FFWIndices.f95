@@ -1,4 +1,9 @@
-program FFWIndices
+module FFWIndices
+
+contains
+
+
+subroutine allInfo()
       ! variables being read from file
       real :: prev_ffmc, prev_dmc, prev_dc, noon_rain, noon_temp
       integer :: start_month, days_of_data, days_in_month, humidity, wind
@@ -172,4 +177,9 @@ program FFWIndices
       prev_dc=dc
 25    continue
 2000  stop
-      end
+
+return
+
+end subroutine allInfo
+
+end module FFWIndices

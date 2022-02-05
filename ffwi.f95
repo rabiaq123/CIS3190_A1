@@ -3,12 +3,12 @@ program ffwi
 ! fortran 95 program to calculate canadian forest
 ! fire weather index for a DEC PDP-11 computer.
 ! reads data and prints out in metric units.
-implicit none
+    use FFWIndices
+    implicit none 
 
     ! variables for file reading
     character(len=20) :: fname
     logical :: lexist
-    integer :: i
     ! variables used for calculations
     integer, dimension(12) :: len_month
     real, dimension(12) :: day_length_dmc, day_length_dc
@@ -21,22 +21,23 @@ implicit none
     1004  format(5x,'FOREST FIRE WEATHER INDEX')
 
     ! error checking and reading input file
-    write(*,*) 'Enter the filename:'
-    read (*,'(A)') fname
-    inquire(file=fname, exist=lexist)
-    if (lexist) then
-        call read_file(fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
-            start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
-    else
-        write (*,*) 'Invalid input file name. Exiting program...'
-    end if 
+    ! write(*,*) 'Enter the filename to read from:'
+    ! read (*,'(A)') fname
+    ! inquire(file=fname, exist=lexist)
+    ! if (lexist) then
+    !     call read_file(fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
+    !             start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
+    ! else
+    !     write (*,*) 'Invalid input file name. Exiting program...'
+    ! end if 
 
-end program ffwi
+    call allInfo()
 
+contains 
 
 ! read input file
 subroutine read_file(fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, &
-    start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
+            start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
     implicit none 
     
     character (len=20), intent(in) :: fname
@@ -75,3 +76,5 @@ subroutine read_file(fname, len_month, day_length_dmc, day_length_dc, prev_ffmc,
 
     return
 end subroutine read_file
+
+end program ffwi
