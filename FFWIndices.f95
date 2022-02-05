@@ -76,10 +76,10 @@ subroutine allInfo()
             call ffmc_calc3(ffmc, curr_final_mc)
 
             ! duff moisture code
-            call dmc_calc(dmc, month, day_length_dmc, noon_temp, prev_rain, humidity, noon_rain, prev_dmc, effective_rain)
+            call calc_dmc(dmc, month, day_length_dmc, noon_temp, prev_rain, humidity, noon_rain, prev_dmc, effective_rain)
 
             ! drought code
-            call dc_calc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain)
+            call calc_dc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain)
 
             ! initial spread index, buildup index, fire weather index
 
@@ -198,7 +198,7 @@ subroutine ffmc_calc3(ffmc, curr_final_mc)
 end subroutine ffmc_calc3
 
 
-subroutine dmc_calc(dmc, month, day_length_dmc, noon_temp, prev_rain, humidity, noon_rain, prev_dmc, effective_rain) 
+subroutine calc_dmc(dmc, month, day_length_dmc, noon_temp, prev_rain, humidity, noon_rain, prev_dmc, effective_rain) 
     implicit none 
 
     integer, intent(in) :: humidity, month
@@ -236,10 +236,10 @@ subroutine dmc_calc(dmc, month, day_length_dmc, noon_temp, prev_rain, humidity, 
     dmc=post_rain_dmc+drying_factor_dmc
 
     return
-end subroutine dmc_calc
+end subroutine calc_dmc
 
 
-subroutine dc_calc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain)
+subroutine calc_dc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain)
     implicit none 
     
     integer, intent(in) :: month
@@ -265,7 +265,7 @@ subroutine dc_calc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev
     if(dc<0.) dc=0.0
 
     return 
-end subroutine dc_calc
+end subroutine calc_dc
 
 
 subroutine calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
