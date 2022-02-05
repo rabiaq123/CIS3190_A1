@@ -31,15 +31,6 @@ implicit none
         write (*,*) 'Invalid input file name. Exiting program...'
     end if 
 
-    ! write data read from file for checking
-    do i=1,12
-        write(*,'(2x,i2,2x,f4.1,2x,f4.1)') len_month(i), day_length_dmc(i), day_length_dc(i)
-    end do 
-    write(*,'(2x,f4.1,2x,f4.1,2x,f5.1,2x,i2,2x,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
-    do i=1,num_daily_entries
-        write(*,'(2x,f4.1,2x,i4,2x,i4,2x,f4.1)') temp_arr(i), humidity_arr(i), wind_arr(i), rain_arr(i)
-    end do
-
 end program ffwi
 
 
