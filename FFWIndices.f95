@@ -65,23 +65,27 @@ subroutine allInfo()
       rain=noon_rain
 
 !     fine fuel moisture code
-      if(noon_rain>0.5) go to 10
-      noon_rain=0.0
-      post_rain_ffmc=prev_ffmc
-      go to 150
-10    prev_rain=noon_rain
-      if(prev_rain<=1.45) go to 6
-      if(prev_rain-5.75) 9,9,12
-6     rain_func_ffmc=123.85-(55.6*alog(prev_rain+1.016))
-      go to 13
-9     rain_func_ffmc=57.87-(18.2*alog(prev_rain-1.016))
-      go to 13
-12    rain_func_ffmc=40.69-(8.25*alog(prev_rain-1.905))
-13    correction_term_ffmc=8.73*exp(-0.1117*prev_ffmc)
-      post_rain_ffmc=(prev_ffmc/100.)*rain_func_ffmc+(1.0-correction_term_ffmc)
-      if(post_rain_ffmc>=0.) go to 150
-      post_rain_ffmc=0.0
-150   prev_mc=101.-post_rain_ffmc
+      if(noon_rain>0.5) then
+            prev_rain=noon_rain
+            if(prev_rain<=1.45) then
+                  rain_func_ffmc=123.85-(55.6*alog(prev_rain+1.016))
+            else 
+                  if(prev_rain-5.75 < 0) then
+                        rain_func_ffmc=57.87-(18.2*alog(prev_rain-1.016))
+                  else if(prev_rain-5.75 == 0) then
+                        rain_func_ffmc=57.87-(18.2*alog(prev_rain-1.016))
+                  else
+                        rain_func_ffmc=40.69-(8.25*alog(prev_rain-1.905))
+                  end if
+            end if
+            correction_term_ffmc=8.73*exp(-0.1117*prev_ffmc)
+            post_rain_ffmc=(prev_ffmc/100.)*rain_func_ffmc+(1.0-correction_term_ffmc)
+            if(post_rain_ffmc<0.) post_rain_ffmc=0.0
+      else 
+            noon_rain=0.0
+            post_rain_ffmc=prev_ffmc
+      end if
+      prev_mc=101.-post_rain_ffmc
       drying_emc=0.942*(humidity**0.679)+(11.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
       if(prev_mc-drying_emc) 26,27,28
 26    wetting_emc=0.618*(humidity**0.753)+(10.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
@@ -147,7 +151,7 @@ subroutine allInfo()
       curr_ff_mc=101.-ffmc
       ff_moisture_func=19.1152*exp(-0.1386*curr_ff_mc)*(1.+curr_ff_mc**4.65/7950000.)
       isi=ff_moisture_func*exp(0.05039*wind)
-93    bui=(0.8*dc*dmc)/(dmc+0.4*dc)
+      bui=(0.8*dc*dmc)/(dmc+0.4*dc)
       if(bui>=dmc) go to 95
       ! ratio function to correct BUI when less than DMC
       fix_bui_ratio_func=(dmc-bui)/dmc
