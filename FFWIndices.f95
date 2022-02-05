@@ -155,15 +155,16 @@ subroutine allInfo()
       ff_moisture_func=19.1152*exp(-0.1386*curr_ff_mc)*(1.+curr_ff_mc**4.65/7950000.)
       isi=ff_moisture_func*exp(0.05039*wind)
       bui=(0.8*dc*dmc)/(dmc+0.4*dc)
-      if(bui>=dmc) go to 95
-      ! ratio function to correct BUI when less than DMC
-      fix_bui_ratio_func=(dmc-bui)/dmc
-      ! DMC function to correct BUI when less than DMC
-      fix_bui_dmc_func=0.92+(0.0114*dmc)**1.7
-      bui=dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
-      if(bui<0.) bui=0.
+      if(bui<dmc) then
+            ! ratio function to correct BUI when less than DMC
+            fix_bui_ratio_func=(dmc-bui)/dmc
+            ! DMC function to correct BUI when less than DMC
+            fix_bui_dmc_func=0.92+(0.0114*dmc)**1.7
+            bui=dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
+            if(bui<0.) bui=0.
+      end if
 
-95    if(bui>80.) then
+      if(bui>80.) then
             intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
       else 
             intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
