@@ -24,8 +24,7 @@ subroutine allInfo()
     ! DC variables
     real :: dc
     ! FWI, ISI, BUI variables
-    real :: isi, bui, fwi, curr_ff_mc, ff_moisture_func, fix_bui_ratio_func, fix_bui_dmc_func
-    real :: intermediate_fwi, log_final_fwi
+    real :: isi, bui, fwi, curr_ff_mc, ff_moisture_func, intermediate_fwi, log_final_fwi
 
 
 !   INPUT VALUE FORMATTING
@@ -82,29 +81,13 @@ subroutine allInfo()
             ! drought code
             call dc_calc(dc, noon_temp, day_length_dc, month, noon_rain, prev_dc, prev_rain, effective_rain)
 
-
-
-
             ! initial spread index, buildup index, fire weather index
 
             ! calculate isi
             call calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
             
             ! calculate bui
-            ! receive: dc, dmc
-            ! return: bui
-            ! receive and return:
-            ! temp: fix_bui_ratio_func, fix_bui_dmc_func
             call calc_bui(bui, dc, dmc)
-            ! bui=(0.8*dc*dmc)/(dmc+0.4*dc)
-            ! if(bui<dmc) then
-            !     ! ratio function to correct BUI when less than DMC
-            !     fix_bui_ratio_func=(dmc-bui)/dmc
-            !     ! DMC function to correct BUI when less than DMC
-            !     fix_bui_dmc_func=0.92+(0.0114*dmc)**1.7
-            !     bui=dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
-            !     if(bui<0.) bui=0.
-            ! end if
 
             ! calculate fwi
             if(bui>80.) then
@@ -118,9 +101,6 @@ subroutine allInfo()
                 log_final_fwi=2.72*(0.43*alog(intermediate_fwi))**0.647
                 fwi=exp(log_final_fwi)
             end if
-
-
-
 
             ! convert values to integer
             int_dc=dc+0.5
@@ -307,9 +287,6 @@ end subroutine calc_isi
 subroutine calc_bui(bui, dc, dmc)
     implicit none 
 
-    ! receive: dc, dmc
-    ! return: bui
-    ! temp: fix_bui_ratio_func, fix_bui_dmc_func
     real, intent(in) :: dc, dmc 
     real, intent(out) :: bui
     real :: fix_bui_ratio_func, fix_bui_dmc_func
