@@ -6,16 +6,16 @@ program ffwi
     use FFWIndices
     implicit none 
 
-    ! variables for file reading
-    character(len=20) :: fname
-    logical :: lexist
-    ! variables used for calculations
-    integer, dimension(12) :: len_month
-    real, dimension(12) :: day_length_dmc, day_length_dc
-    real :: prev_ffmc, prev_dmc, prev_dc
-    integer :: start_month, days_of_data, num_daily_entries
-    real, dimension(365) :: temp_arr, rain_arr
-    integer, dimension(365) :: humidity_arr, wind_arr
+    ! ! variables for file reading
+    ! character(len=20) :: fname
+    ! logical :: lexist
+    ! ! variables used for calculations
+    ! integer, dimension(12) :: len_month
+    ! real, dimension(12) :: day_length_dmc, day_length_dc
+    ! real :: prev_ffmc, prev_dmc, prev_dc
+    ! integer :: start_month, days_of_data, num_daily_entries
+    ! real, dimension(365) :: temp_arr, rain_arr
+    ! integer, dimension(365) :: humidity_arr, wind_arr
 
     write(*,1004)
     1004  format(5x,'FOREST FIRE WEATHER INDEX')

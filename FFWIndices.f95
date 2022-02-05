@@ -49,19 +49,19 @@ subroutine allInfo()
       do 25 month=start_month,12
       days_in_month=len_month(month)
 1002  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
-      if(month==start_month) go to 304
-      data_start_date=1
-      go to 302
-304   data_start_date=len_month(month)-days_of_data+1
+      if(month==start_month) then
+            data_start_date=len_month(month)-days_of_data+1
+      else
+            data_start_date=1
+      end if
 
 !     read daily weather data
-302   l=0
+      l=0
       do 25 date=data_start_date,days_in_month
       l=l+1
       read(*,101,end=2000) noon_temp,humidity,wind,noon_rain
-      if(l/=1) go to 301
-      write(*,1002)
-301   temp=noon_temp
+      if(l==1) write(*,1002)
+      temp=noon_temp
       rain=noon_rain
 
 !     fine fuel moisture code
