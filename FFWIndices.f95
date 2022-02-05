@@ -84,19 +84,12 @@ subroutine allInfo()
 
 
 
-
+            
             ! initial spread index, buildup index, fire weather index
 
             ! calculate isi
             call calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
-            ! receive: wind
-            ! return: isi
-            ! receive and return: ffmc
-            ! temp: curr_ff_mc, ff_moisture_func
-            ! curr_ff_mc=101.-ffmc
-            ! ff_moisture_func=19.1152*exp(-0.1386*curr_ff_mc)*(1.+curr_ff_mc**4.65/7950000.)
-            ! isi=ff_moisture_func*exp(0.05039*wind)
-
+            
             ! calculate bui
             bui=(0.8*dc*dmc)/(dmc+0.4*dc)
             if(bui<dmc) then
@@ -293,10 +286,6 @@ end subroutine dc_calc
 subroutine calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
     implicit none 
 
-    ! receive: wind
-    ! return: isi
-    ! receive and return: ffmc
-    ! temp: curr_ff_mc, ff_moisture_func
     integer, intent(in) :: wind 
     real, intent(out) :: isi 
     real, intent(inout) :: ffmc
