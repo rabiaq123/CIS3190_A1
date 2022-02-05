@@ -101,10 +101,9 @@ subroutine allInfo()
 33    ffmc=0.0
 
 !     duff moisture code
-34    if(noon_temp+1.1>=0.) go to 41
-      noon_temp=-1.1
-41    drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
-43    if(noon_rain>1.5) go to 45
+34    if(noon_temp+1.1<0.) noon_temp=-1.1
+      drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
+      if(noon_rain>1.5) go to 45
       post_rain_dmc=prev_dmc
       go to 250
 45    prev_rain=noon_rain
