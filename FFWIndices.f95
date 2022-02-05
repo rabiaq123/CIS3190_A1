@@ -77,32 +77,35 @@ subroutine allInfo()
             call ffmc_calc3(ffmc, curr_final_mc)
 
             ! duff moisture code
-            if(noon_temp+1.1<0.) noon_temp=-1.1
-            drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
-
-            if(noon_rain>1.5) then
-                prev_rain=noon_rain
-                effective_rain=0.92*prev_rain-1.27
-                mc_dmc=20.0+280./exp(0.023*prev_dmc)
-                if(prev_dmc<=33.) then
-                    slope_func_dmc=100./(0.5+0.3*prev_dmc)
-                else
-                    if (prev_dmc-65. < 0.0) then
-                        slope_func_dmc=14.-1.3*alog(prev_dmc)
-                    else if (prev_dmc-65. == 0.0) then
-                        slope_func_dmc=14.-1.3*alog(prev_dmc)
-                    else
-                        slope_func_dmc=6.2*alog(prev_dmc)-17.2
-                    end if
-                end if 
-                mc_post_rain_dmc=mc_dmc+(1000.*effective_rain)/(48.77+slope_func_dmc*effective_rain)
-                post_rain_dmc=43.43*(5.6348-alog(mc_post_rain_dmc-20.))
-            else 
-                post_rain_dmc=prev_dmc
-            end if
-
-            if(post_rain_dmc<0.) post_rain_dmc=0.0
-            dmc=post_rain_dmc+drying_factor_dmc
+            ! receive and return: noon_temp, prev_rain
+            ! receive: humidity, noon_rain, prev_dmc
+            ! return: effective_rain, dmc
+            ! temp: drying_factor_dmc, day_length_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, post_rain_dmc
+            call dmc_calc(dmc, month, day_length_dmc, noon_temp, prev_rain, humidity, noon_rain, prev_dmc, effective_rain)
+            ! if(noon_temp+1.1<0.) noon_temp=-1.1
+            ! drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
+            ! if(noon_rain>1.5) then
+            !     prev_rain=noon_rain
+            !     effective_rain=0.92*prev_rain-1.27
+            !     mc_dmc=20.0+280./exp(0.023*prev_dmc)
+            !     if(prev_dmc<=33.) then
+            !         slope_func_dmc=100./(0.5+0.3*prev_dmc)
+            !     else
+            !         if (prev_dmc-65. < 0.0) then
+            !             slope_func_dmc=14.-1.3*alog(prev_dmc)
+            !         else if (prev_dmc-65. == 0.0) then
+            !             slope_func_dmc=14.-1.3*alog(prev_dmc)
+            !         else
+            !             slope_func_dmc=6.2*alog(prev_dmc)-17.2
+            !         end if
+            !     end if 
+            !     mc_post_rain_dmc=mc_dmc+(1000.*effective_rain)/(48.77+slope_func_dmc*effective_rain)
+            !     post_rain_dmc=43.43*(5.6348-alog(mc_post_rain_dmc-20.))
+            ! else 
+            !     post_rain_dmc=prev_dmc
+            ! end if
+            ! if(post_rain_dmc<0.) post_rain_dmc=0.0
+            ! dmc=post_rain_dmc+drying_factor_dmc
 
             ! drought code
             if(noon_temp+2.8<0.) noon_temp=-2.8
@@ -154,6 +157,7 @@ subroutine allInfo()
             int_bui=bui+0.5
             int_fwi=fwi+0.5
             write(*,15) month,date,temp,humidity,wind,rain,int_ffmc,int_dmc,int_dc,int_isi,int_bui,int_fwi
+
             prev_ffmc=ffmc
             prev_dmc=dmc
             prev_dc=dc
@@ -169,8 +173,8 @@ subroutine ffmc_calc1(noon_rain, prev_ffmc, prev_rain, post_rain_ffmc)
     implicit none 
 
     real, intent(in) :: prev_ffmc
-    real, intent(inout) :: noon_rain
     real, intent(out):: prev_rain, post_rain_ffmc
+    real, intent(inout) :: noon_rain
     real :: rain_func_ffmc, correction_term_ffmc
 
     if(noon_rain>0.5) then
@@ -239,6 +243,51 @@ subroutine ffmc_calc3(ffmc, curr_final_mc)
 
     return
 end subroutine ffmc_calc3
+
+
+subroutine dmc_calc(dmc, month, day_length_dmc, noon_temp, prev_rain, humidity, noon_rain, prev_dmc, effective_rain) 
+    implicit none 
+
+    ! receive and return: noon_temp, prev_rain
+    ! receive: humidity, noon_rain, prev_dmc
+    ! return: effective_rain, dmc
+    ! temp: drying_factor_dmc, day_length_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, post_rain_dmc
+    integer, intent(in) :: humidity, month
+    real, intent(in) :: noon_rain, prev_dmc
+    real, dimension(12), intent(in) :: day_length_dmc
+    real, intent(out) :: effective_rain, dmc
+    real, intent(inout) :: noon_temp, prev_rain
+    real :: drying_factor_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, post_rain_dmc
+
+    if(noon_temp+1.1<0.) noon_temp=-1.1
+    drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
+
+    if(noon_rain>1.5) then
+        prev_rain=noon_rain
+        effective_rain=0.92*prev_rain-1.27
+        mc_dmc=20.0+280./exp(0.023*prev_dmc)
+        if(prev_dmc<=33.) then
+            slope_func_dmc=100./(0.5+0.3*prev_dmc)
+        else
+            if (prev_dmc-65. < 0.0) then
+                slope_func_dmc=14.-1.3*alog(prev_dmc)
+            else if (prev_dmc-65. == 0.0) then
+                slope_func_dmc=14.-1.3*alog(prev_dmc)
+            else
+                slope_func_dmc=6.2*alog(prev_dmc)-17.2
+            end if
+        end if 
+        mc_post_rain_dmc=mc_dmc+(1000.*effective_rain)/(48.77+slope_func_dmc*effective_rain)
+        post_rain_dmc=43.43*(5.6348-alog(mc_post_rain_dmc-20.))
+    else 
+        post_rain_dmc=prev_dmc
+    end if
+
+    if(post_rain_dmc<0.) post_rain_dmc=0.0
+    dmc=post_rain_dmc+drying_factor_dmc
+
+    return
+end subroutine dmc_calc
 
 
 end module FFWIndices
