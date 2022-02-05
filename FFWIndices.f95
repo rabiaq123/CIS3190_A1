@@ -103,8 +103,8 @@ subroutine allInfo()
       ffmc=101.-curr_final_mc
       if(ffmc>101.) then
             ffmc=101.
-      else 
-            if(ffmc < 0) ffmc=0.0
+      else if(ffmc < 0) then 
+            ffmc=0.0
       end if
 
 !     duff moisture code
