@@ -90,17 +90,22 @@ subroutine allInfo()
             call calc_bui(bui, dc, dmc)
 
             ! calculate fwi
-            if(bui>80.) then
-                intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
-            else 
-                intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
-            end if
-            if(intermediate_fwi-1.0<=0.) then
-                fwi=intermediate_fwi
-            else 
-                log_final_fwi=2.72*(0.43*alog(intermediate_fwi))**0.647
-                fwi=exp(log_final_fwi)
-            end if
+            ! recieve: bui, isi,
+            ! return: fwi
+            ! receive and return:
+            ! temp: intermediate_fwi, log_final_fwi
+            call calc_fwi(fwi, bui, isi)
+            ! if(bui>80.) then
+            !     intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
+            ! else 
+            !     intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
+            ! end if
+            ! if(intermediate_fwi-1.0<=0.) then
+            !     fwi=intermediate_fwi
+            ! else 
+            !     log_final_fwi=2.72*(0.43*alog(intermediate_fwi))**0.647
+            !     fwi=exp(log_final_fwi)
+            ! end if
 
             ! convert values to integer
             int_dc=dc+0.5
@@ -303,6 +308,33 @@ subroutine calc_bui(bui, dc, dmc)
 
     return
 end subroutine calc_bui
+
+
+subroutine calc_fwi(fwi, bui, isi)
+    implicit none 
+
+    ! recieve: bui, isi,
+    ! return: fwi
+    ! receive and return:
+    ! temp: intermediate_fwi, log_final_fwi
+    real, intent(in) :: bui, isi 
+    real, intent(out) :: fwi 
+    real :: intermediate_fwi, log_final_fwi
+
+    if(bui>80.) then
+        intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
+    else 
+        intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
+    end if
+    if(intermediate_fwi-1.0<=0.) then
+        fwi=intermediate_fwi
+    else 
+        log_final_fwi=2.72*(0.43*alog(intermediate_fwi))**0.647
+        fwi=exp(log_final_fwi)
+    end if
+
+    return 
+end subroutine calc_fwi
 
 
 end module FFWIndices
