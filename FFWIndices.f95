@@ -84,29 +84,34 @@ subroutine allInfo()
 
 
 
-            
+
             ! initial spread index, buildup index, fire weather index
 
             ! calculate isi
             call calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
             
             ! calculate bui
-            bui=(0.8*dc*dmc)/(dmc+0.4*dc)
-            if(bui<dmc) then
-                ! ratio function to correct BUI when less than DMC
-                fix_bui_ratio_func=(dmc-bui)/dmc
-                ! DMC function to correct BUI when less than DMC
-                fix_bui_dmc_func=0.92+(0.0114*dmc)**1.7
-                bui=dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
-                if(bui<0.) bui=0.
-            end if
+            ! receive: dc, dmc
+            ! return: bui
+            ! receive and return:
+            ! temp: fix_bui_ratio_func, fix_bui_dmc_func
+            call calc_bui(bui, dc, dmc)
+            ! bui=(0.8*dc*dmc)/(dmc+0.4*dc)
+            ! if(bui<dmc) then
+            !     ! ratio function to correct BUI when less than DMC
+            !     fix_bui_ratio_func=(dmc-bui)/dmc
+            !     ! DMC function to correct BUI when less than DMC
+            !     fix_bui_dmc_func=0.92+(0.0114*dmc)**1.7
+            !     bui=dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
+            !     if(bui<0.) bui=0.
+            ! end if
+
+            ! calculate fwi
             if(bui>80.) then
                 intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
             else 
                 intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
             end if
-
-            ! calculate fwi
             if(intermediate_fwi-1.0<=0.) then
                 fwi=intermediate_fwi
             else 
@@ -297,6 +302,30 @@ subroutine calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
 
     return
 end subroutine calc_isi
+
+
+subroutine calc_bui(bui, dc, dmc)
+    implicit none 
+
+    ! receive: dc, dmc
+    ! return: bui
+    ! temp: fix_bui_ratio_func, fix_bui_dmc_func
+    real, intent(in) :: dc, dmc 
+    real, intent(out) :: bui
+    real :: fix_bui_ratio_func, fix_bui_dmc_func
+
+    bui=(0.8*dc*dmc)/(dmc+0.4*dc)
+    if(bui<dmc) then
+        ! ratio function to correct BUI when less than DMC
+        fix_bui_ratio_func=(dmc-bui)/dmc
+        ! DMC function to correct BUI when less than DMC
+        fix_bui_dmc_func=0.92+(0.0114*dmc)**1.7
+        bui=dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
+        if(bui<0.) bui=0.
+    end if
+
+    return
+end subroutine calc_bui
 
 
 end module FFWIndices
