@@ -166,14 +166,15 @@ subroutine allInfo()
       intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
       go to 91
 60    intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
-91    if(intermediate_fwi-1.0<=0.) go to 98
-      log_final_fwi=2.72*(0.43*alog(intermediate_fwi))**0.647
-      fwi=exp(log_final_fwi)
-      go to 400
-98    fwi=intermediate_fwi
+91    if(intermediate_fwi-1.0<=0.) then
+            fwi=intermediate_fwi
+      else 
+            log_final_fwi=2.72*(0.43*alog(intermediate_fwi))**0.647
+            fwi=exp(log_final_fwi)
+      end if
 
 !     convert values to integer
-400   int_dc=dc+0.5
+      int_dc=dc+0.5
       int_ffmc=ffmc+0.5
       int_dmc=dmc+0.5
       int_isi=isi+0.5
