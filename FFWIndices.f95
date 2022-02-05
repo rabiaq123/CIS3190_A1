@@ -103,24 +103,30 @@ subroutine allInfo()
 !     duff moisture code
 34    if(noon_temp+1.1<0.) noon_temp=-1.1
       drying_factor_dmc=1.894*(noon_temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
-      if(noon_rain>1.5) go to 45
-      post_rain_dmc=prev_dmc
-      go to 250
-45    prev_rain=noon_rain
-      effective_rain=0.92*prev_rain-1.27
-      mc_dmc=20.0+280./exp(0.023*prev_dmc)
-      if(prev_dmc<=33.) go to 50
-      if(prev_dmc-65.) 52,52,53
-50    slope_func_dmc=100./(0.5+0.3*prev_dmc)
-      go to 55
-52    slope_func_dmc=14.-1.3*alog(prev_dmc)
-      go to 55
-53    slope_func_dmc=6.2*alog(prev_dmc)-17.2
-55    mc_post_rain_dmc=mc_dmc+(1000.*effective_rain)/(48.77+slope_func_dmc*effective_rain)
-      post_rain_dmc=43.43*(5.6348-alog(mc_post_rain_dmc-20.))
-250   if(post_rain_dmc>=0.) go to 61
-      post_rain_dmc=0.0
-61    dmc=post_rain_dmc+drying_factor_dmc
+
+      if(noon_rain>1.5) then
+            prev_rain=noon_rain
+            effective_rain=0.92*prev_rain-1.27
+            mc_dmc=20.0+280./exp(0.023*prev_dmc)
+            if(prev_dmc<=33.) then
+                  slope_func_dmc=100./(0.5+0.3*prev_dmc)
+            else
+                  if (prev_dmc-65. < 0.0) then
+                        slope_func_dmc=14.-1.3*alog(prev_dmc)
+                  else if (prev_dmc-65. == 0.0) then
+                        slope_func_dmc=14.-1.3*alog(prev_dmc)
+                  else
+                        slope_func_dmc=6.2*alog(prev_dmc)-17.2
+                  end if
+            end if 
+            mc_post_rain_dmc=mc_dmc+(1000.*effective_rain)/(48.77+slope_func_dmc*effective_rain)
+            post_rain_dmc=43.43*(5.6348-alog(mc_post_rain_dmc-20.))
+      else 
+            post_rain_dmc=prev_dmc
+      end if
+
+      if(post_rain_dmc<0.) post_rain_dmc=0.0
+      dmc=post_rain_dmc+drying_factor_dmc
 
 !     drought code
       if(noon_temp+2.8>=0.) go to 65
