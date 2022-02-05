@@ -85,19 +85,22 @@ subroutine allInfo()
             noon_rain=0.0
             post_rain_ffmc=prev_ffmc
       end if
+      
       prev_mc=101.-post_rain_ffmc
       drying_emc=0.942*(humidity**0.679)+(11.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
-      if(prev_mc-drying_emc) 26,27,28
-26    wetting_emc=0.618*(humidity**0.753)+(10.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
-      if(prev_mc<wetting_emc) go to 29
-27    curr_final_mc=prev_mc
-      go to 30
-28    intermediate_drying_rate=0.424*(1.-(humidity/100.)**1.7)+(0.0694*(wind**0.5))*(1.-(humidity/100.)**8)
-      log_drying_rate=intermediate_drying_rate*(0.463*(exp(0.0365*noon_temp)))
-      curr_final_mc=drying_emc+(prev_mc-drying_emc)/10.**log_drying_rate
-      go to 30
-29    curr_final_mc=wetting_emc-(wetting_emc-prev_mc)/1.9953
-30    ffmc=101.-curr_final_mc
+
+      if(prev_mc-drying_emc < 0) then
+            wetting_emc=0.618*(humidity**0.753)+(10.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
+            if(prev_mc<wetting_emc) curr_final_mc=wetting_emc-(wetting_emc-prev_mc)/1.9953
+      else if(prev_mc-drying_emc == 0) then
+            curr_final_mc=prev_mc
+      else
+            intermediate_drying_rate=0.424*(1.-(humidity/100.)**1.7)+(0.0694*(wind**0.5))*(1.-(humidity/100.)**8)
+            log_drying_rate=intermediate_drying_rate*(0.463*(exp(0.0365*noon_temp)))
+            curr_final_mc=drying_emc+(prev_mc-drying_emc)/10.**log_drying_rate
+      end if 
+
+      ffmc=101.-curr_final_mc
       if(ffmc>101.) go to 32
       if(ffmc) 33,34,34
 32    ffmc=101.
