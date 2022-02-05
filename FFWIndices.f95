@@ -18,9 +18,7 @@ subroutine allInfo()
     integer :: l, data_start_date
     real :: prev_rain, effective_rain
     ! FFMC variables
-    real :: ffmc
-    real :: rain_func_ffmc, post_rain_ffmc, prev_mc, drying_emc, wetting_emc, curr_final_mc
-    real :: intermediate_drying_rate, log_drying_rate, correction_term_ffmc
+    real :: ffmc, post_rain_ffmc, curr_final_mc
     ! DMC variables
     real :: dmc, drying_factor_dmc, post_rain_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc
     ! DC variables
@@ -46,7 +44,7 @@ subroutine allInfo()
     ! formatting for data to be output to the requested file
 15  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
 
-!   INPUT FILE READING 
+!   INPUT READING 
 
     ! read length of months and day-length factors
     do month=1,12
@@ -75,58 +73,9 @@ subroutine allInfo()
 
             ! fine fuel moisture code
 
-            ! already have values for: 
-            ! noon_rain, prev_ffmc, humidity, noon_temp, wind 
-
-            ! will be returning values for other calcs: 
-            ! prev_rain, ffmc
-            ! call calculate_ffmc(noon_rain, prev_ffmc, humidity, noon_temp, wind, prev_rain, ffmc)
-
             call calc1(noon_rain, prev_ffmc, prev_rain, post_rain_ffmc)
-            ! if(noon_rain>0.5) then
-            !     prev_rain=noon_rain
-            !     if(prev_rain<=1.45) then
-            !         rain_func_ffmc=123.85-(55.6*alog(prev_rain+1.016))
-            !     else 
-            !         if(prev_rain-5.75 < 0) then
-            !             rain_func_ffmc=57.87-(18.2*alog(prev_rain-1.016))
-            !         else if(prev_rain-5.75 == 0) then
-            !             rain_func_ffmc=57.87-(18.2*alog(prev_rain-1.016))
-            !         else
-            !             rain_func_ffmc=40.69-(8.25*alog(prev_rain-1.905))
-            !         end if
-            !     end if
-            !     correction_term_ffmc=8.73*exp(-0.1117*prev_ffmc)
-            !     post_rain_ffmc=(prev_ffmc/100.)*rain_func_ffmc+(1.0-correction_term_ffmc)
-            !     if(post_rain_ffmc<0.) post_rain_ffmc=0.0
-            ! else 
-            !     noon_rain=0.0
-            !     post_rain_ffmc=prev_ffmc
-            ! end if
-
             call calc2(post_rain_ffmc, humidity, wind, noon_temp, curr_final_mc)
-            ! local: prev_mc, drying_emc, wetting_emc, curr_final_mc
-            ! prev_mc=101.-post_rain_ffmc
-            ! drying_emc=0.942*(humidity**0.679)+(11.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
-
-            ! if(prev_mc-drying_emc < 0) then
-            !     wetting_emc=0.618*(humidity**0.753)+(10.*exp((humidity-100.)/10.))+0.18*(21.1-noon_temp)*(1.-1./exp(0.115*humidity))
-            !     if(prev_mc<wetting_emc) curr_final_mc=wetting_emc-(wetting_emc-prev_mc)/1.9953
-            ! else if(prev_mc-drying_emc == 0) then
-            !     curr_final_mc=prev_mc
-            ! else
-            !     intermediate_drying_rate=0.424*(1.-(humidity/100.)**1.7)+(0.0694*(wind**0.5))*(1.-(humidity/100.)**8)
-            !     log_drying_rate=intermediate_drying_rate*(0.463*(exp(0.0365*noon_temp)))
-            !     curr_final_mc=drying_emc+(prev_mc-drying_emc)/10.**log_drying_rate
-            ! end if 
-
             call calc3(ffmc, curr_final_mc)
-            ! ffmc=101.-curr_final_mc
-            ! if(ffmc>101.) then
-            !     ffmc=101.
-            ! else if(ffmc < 0) then 
-            !     ffmc=0.0
-            ! end if
 
             ! duff moisture code
             if(noon_temp+1.1<0.) noon_temp=-1.1
