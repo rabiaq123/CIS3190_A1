@@ -36,6 +36,13 @@ subroutine allInfo()
     ! moisture codes' std starting values, starting month, and # of days data is provided
 102 format(f4.1,f4.1,f5.1,i2,i2)
 
+!   OUTPUT CONTENT FORMATTING
+
+    ! header formatting
+13  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
+    ! formatting for data to be output to the requested file
+15  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
+
 !   INPUT FILE READING 
 
     ! read length of months and day-length factors
@@ -43,7 +50,6 @@ subroutine allInfo()
     read(*,100) len_month(month), day_length_dmc(month), day_length_dc(month)
     end do
 
-13  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
 
     ! read initial values of ffmc, dmc, dc, starting month, and
     ! # of days weather data is provided that month.
@@ -185,8 +191,7 @@ subroutine allInfo()
             int_isi=isi+0.5
             int_bui=bui+0.5
             int_fwi=fwi+0.5
-            write(*,1001) month,date,temp,humidity,wind,rain,int_ffmc,int_dmc,int_dc,int_isi,int_bui,int_fwi
-1001        format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
+            write(*,15) month,date,temp,humidity,wind,rain,int_ffmc,int_dmc,int_dc,int_isi,int_bui,int_fwi
             prev_ffmc=ffmc
             prev_dmc=dmc
             prev_dc=dc
