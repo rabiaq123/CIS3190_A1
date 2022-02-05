@@ -162,11 +162,14 @@ subroutine allInfo()
       fix_bui_dmc_func=0.92+(0.0114*dmc)**1.7
       bui=dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
       if(bui<0.) bui=0.
-95    if(bui>80.) go to 60
-      intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
-      go to 91
-60    intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
-91    if(intermediate_fwi-1.0<=0.) then
+
+95    if(bui>80.) then
+            intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
+      else 
+            intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
+      end if
+
+      if(intermediate_fwi-1.0<=0.) then
             fwi=intermediate_fwi
       else 
             log_final_fwi=2.72*(0.43*alog(intermediate_fwi))**0.647
