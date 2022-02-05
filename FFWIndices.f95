@@ -72,10 +72,9 @@ subroutine allInfo()
             rain=noon_rain
 
             ! fine fuel moisture code
-
-            call calc1(noon_rain, prev_ffmc, prev_rain, post_rain_ffmc)
-            call calc2(post_rain_ffmc, humidity, wind, noon_temp, curr_final_mc)
-            call calc3(ffmc, curr_final_mc)
+            call ffmc_calc1(noon_rain, prev_ffmc, prev_rain, post_rain_ffmc)
+            call ffmc_calc2(post_rain_ffmc, humidity, wind, noon_temp, curr_final_mc)
+            call ffmc_calc3(ffmc, curr_final_mc)
 
             ! duff moisture code
             if(noon_temp+1.1<0.) noon_temp=-1.1
@@ -166,7 +165,7 @@ subroutine allInfo()
 end subroutine allInfo
 
 
-subroutine calc1(noon_rain, prev_ffmc, prev_rain, post_rain_ffmc)
+subroutine ffmc_calc1(noon_rain, prev_ffmc, prev_rain, post_rain_ffmc)
     implicit none 
 
     real, intent(in) :: prev_ffmc
@@ -196,10 +195,10 @@ subroutine calc1(noon_rain, prev_ffmc, prev_rain, post_rain_ffmc)
     end if
 
     return
-end subroutine calc1
+end subroutine ffmc_calc1
 
 
-subroutine calc2(post_rain_ffmc, humidity, wind, noon_temp, curr_final_mc)
+subroutine ffmc_calc2(post_rain_ffmc, humidity, wind, noon_temp, curr_final_mc)
     implicit none 
 
     integer, intent(in) :: humidity, wind
@@ -222,10 +221,10 @@ subroutine calc2(post_rain_ffmc, humidity, wind, noon_temp, curr_final_mc)
     end if 
 
     return
-end subroutine calc2
+end subroutine ffmc_calc2
 
 
-subroutine calc3(ffmc, curr_final_mc)
+subroutine ffmc_calc3(ffmc, curr_final_mc)
     implicit none 
 
     real, intent(in) :: curr_final_mc
@@ -239,7 +238,7 @@ subroutine calc3(ffmc, curr_final_mc)
     end if
 
     return
-end subroutine calc3
+end subroutine ffmc_calc3
 
 
 end module FFWIndices
