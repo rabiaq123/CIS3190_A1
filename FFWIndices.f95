@@ -28,7 +28,7 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
     ! FFMC, DMC, DC variables
     real :: ffmc, curr_final_mc, dmc, dc
     ! FWI, ISI, BUI variables
-    real :: isi, bui, fwi, curr_ff_mc, ff_moisture_func
+    real :: isi, bui, fwi
 
     ! formatting for headings in output file
 13  format(/,1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi')
@@ -62,7 +62,7 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
             call calc_dc(dc, temp, day_length_dc, month, rain, prev_dc, prev_rain, effective_rain)
             
             ! calculate initial spread index, buildup index, and fire weather index
-            call calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
+            call calc_isi(isi, wind, ffmc)
             call calc_bui(bui, dc, dmc)
             call calc_fwi(fwi, bui, isi)
 
@@ -236,7 +236,7 @@ end subroutine calc_dc
 
 
 ! calculate initial spread index
-subroutine calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
+subroutine calc_isi(isi, wind, ffmc)
     implicit none 
 
     integer, intent(in) :: wind 
