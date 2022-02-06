@@ -15,8 +15,8 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
     real, intent(inout) :: prev_ffmc, prev_dmc, prev_dc 
     integer, intent(in) :: start_month, days_of_data, num_daily_entries
     ! section 3
-    real, dimension(365), intent(in) :: temp_arr, rain_arr
-    integer, dimension(365), intent(in) :: humidity_arr, wind_arr
+    real, dimension(366), intent(in) :: temp_arr, rain_arr
+    integer, dimension(366), intent(in) :: humidity_arr, wind_arr
 
     ! variables being read from file
     real :: rain, temp

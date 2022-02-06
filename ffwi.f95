@@ -14,8 +14,8 @@ program ffwi
     real, dimension(12) :: day_length_dmc, day_length_dc
     real :: prev_ffmc, prev_dmc, prev_dc
     integer :: start_month, days_of_data, num_daily_entries
-    real, dimension(365) :: temp_arr, rain_arr
-    integer, dimension(365) :: humidity_arr, wind_arr
+    real, dimension(366) :: temp_arr, rain_arr
+    integer, dimension(366) :: humidity_arr, wind_arr
 
     write(*,*)
     write(*,1004)
@@ -86,8 +86,8 @@ subroutine read_section3(num_daily_entries, temp_arr, rain_arr, humidity_arr, wi
 
     integer :: stat, index = 1
     integer, intent(out) :: num_daily_entries
-    real, dimension(365), intent(out) :: temp_arr, rain_arr
-    integer, dimension(365), intent(out) :: humidity_arr, wind_arr
+    real, dimension(366), intent(out) :: temp_arr, rain_arr
+    integer, dimension(366), intent(out) :: humidity_arr, wind_arr
 
     do
         read(20,'(f4.1,i4,i4,f4.1)',IOSTAT=stat) temp_arr(index), humidity_arr(index), wind_arr(index), rain_arr(index)
