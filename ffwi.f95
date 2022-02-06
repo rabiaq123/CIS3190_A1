@@ -20,7 +20,8 @@ program ffwi
 50  format(//,5x,'FOREST FIRE WEATHER INDEX',/)
 
     write(*,50)
-
+    call display_unit_note()
+ 
     ! get input and output filenames and perform error checking
     call get_filenames(input_exists, input_fname, output_fname)
 
@@ -40,6 +41,21 @@ program ffwi
     write(*,*) 'You will find a legend to accompany the results compiled for you.'
 
 contains 
+
+
+! print a message on console showing user the units needed for accurate calculations
+subroutine display_unit_note()
+    implicit none 
+
+    write(*,*) ' Please note the units this program uses for daily weather data:'
+    write(*,*) ' temperature: °C'
+    write(*,*) ' relative humidity: %'
+    write(*,*) ' wind speed: km/h'
+    write(*,*) ' rainfall: mm'
+    write(*,*)
+
+    return 
+end subroutine display_unit_note
 
 
 ! get input and output filenames, prompt user to re-enter filename if error
