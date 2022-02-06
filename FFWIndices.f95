@@ -91,12 +91,15 @@ subroutine output_legend()
 
     write(25,*) 'FOREST FIRE WEATHER INDEX CALCULATIONS'
     write(25,*) '--------------------------------------'
-    write(25,*) 'LEGEND'
-    write(25,*) 'rh     - relative humidity'
+    write(25,*) 'LEGEND AND UNITS'
+    write(25,*) 'temp   - temperature (°C)'
+    write(25,*) 'rh     - relative humidity (%)'
+    write(25,*) 'wind   - wind speed (km/h)'
+    write(25,*) 'rain   - rainfall (mm)'
     write(25,*) 'ffmc   - fine fuel moisture code'
     write(25,*) 'dmc    - duff moisture code'
     write(25,*) 'dc     - drought code'
-    write(25,*) 'isi    - initial sread index'
+    write(25,*) 'isi    - initial spread index'
     write(25,*) 'bui    - buildup index'
     write(25,*) 'fwi    - fire weather index'
 
