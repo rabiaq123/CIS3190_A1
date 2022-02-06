@@ -66,17 +66,12 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
             call calc_bui(bui, dc, dmc)
             call calc_fwi(fwi, bui, isi)
 
-            ! convert values to integer
-            int_dc=nint(dc)
-            int_ffmc=nint(ffmc)
-            int_dmc=nint(dmc)
-            int_isi=nint(isi)
-            int_bui=nint(bui)
-            int_fwi=nint(fwi)
+            ! convert necessary values to int format and write to file
+            call round_results(int_dc, int_ffmc, int_dmc, int_isi, int_bui, int_fwi, dc, ffmc, dmc, isi, bui, fwi)
             write(25,15) month,date,temp_arr(i),humidity_arr(i),wind_arr(i),rain_arr(i),int_ffmc,int_dmc,int_dc, &
                         int_isi,int_bui,int_fwi
+            
             i = i + 1
-
             prev_ffmc=ffmc
             prev_dmc=dmc
             prev_dc=dc
@@ -275,6 +270,23 @@ subroutine calc_fwi(fwi, bui, isi)
 
     return 
 end subroutine calc_fwi
+
+
+subroutine round_results(int_dc, int_ffmc, int_dmc, int_isi, int_bui, int_fwi, dc, ffmc, dmc, isi, bui, fwi)
+    implicit none
+
+    integer, intent(out) :: int_dc, int_ffmc, int_dmc, int_isi, int_bui, int_fwi
+    real, intent(in) :: dc, ffmc, dmc, isi, bui, fwi
+
+    int_dc=nint(dc)
+    int_ffmc=nint(ffmc)
+    int_dmc=nint(dmc)
+    int_isi=nint(isi)
+    int_bui=nint(bui)
+    int_fwi=nint(fwi)
+
+    return
+end subroutine round_results
 
 
 end module FFWIndices
