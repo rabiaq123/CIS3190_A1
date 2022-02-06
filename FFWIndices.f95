@@ -8,24 +8,23 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
     implicit none 
 
     character(len=20), intent(in) :: output_fname
-    ! section 1
+    ! for section 1 of the input file
     integer, dimension(12), intent(in) :: len_month
     real, dimension(12), intent(in) :: day_length_dmc, day_length_dc
-    ! section 2
+    ! for section 2 of the input file
     real, intent(inout) :: prev_ffmc, prev_dmc, prev_dc 
     integer, intent(in) :: start_month, days_of_data, num_daily_entries
-    ! section 3
+    ! for section 3 of the input file
     real, dimension(366), intent(in) :: temp_arr, rain_arr
     integer, dimension(366), intent(in) :: humidity_arr, wind_arr
 
-    ! variables being read from file
+    integer :: idx = 1, data_start_date
+    real :: prev_rain, effective_rain
+    ! local variables for daily weather data
     real :: rain, temp
     integer :: days_in_month, humidity, wind
     ! variables used for final output
     integer :: month, date, int_ffmc, int_dmc, int_dc, int_isi, int_bui, int_fwi
-    ! non-specific variables
-    integer :: i = 1, data_start_date
-    real :: prev_rain, effective_rain
     ! FFMC, DMC, DC variables
     real :: ffmc, curr_final_mc, dmc, dc
     ! FWI, ISI, BUI variables
@@ -50,12 +49,12 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
 
         ! read daily weather data
         do date=data_start_date,days_in_month
-            if (i == num_daily_entries + 1) exit
+            if (idx == num_daily_entries + 1) exit
             if(date == data_start_date) write(25,13)
-            temp=temp_arr(i)
-            rain=rain_arr(i)
-            humidity=humidity_arr(i)
-            wind=wind_arr(i)
+            temp=temp_arr(idx)
+            rain=rain_arr(idx)
+            humidity=humidity_arr(idx)
+            wind=wind_arr(idx)
             
             ! calculate fine fuel moisture code, duff moisture code, and drought code
             call calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, curr_final_mc)
@@ -69,10 +68,10 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
 
             ! convert necessary values to int format and write to file
             call round_results(int_dc, int_ffmc, int_dmc, int_isi, int_bui, int_fwi, dc, ffmc, dmc, isi, bui, fwi)
-            write(25,15) month,date,temp_arr(i),humidity_arr(i),wind_arr(i),rain_arr(i),int_ffmc,int_dmc,int_dc, &
-                        int_isi,int_bui,int_fwi
-            
-            i = i + 1
+            write(25,15) month, date, temp_arr(idx), humidity_arr(idx), wind_arr(idx), rain_arr(idx), & 
+                        int_ffmc, int_dmc, int_dc, int_isi,int_bui,int_fwi
+
+            idx = idx + 1
             prev_ffmc=ffmc
             prev_dmc=dmc
             prev_dc=dc
@@ -105,6 +104,7 @@ subroutine output_legend()
 end subroutine output_legend
 
 
+! calculate fine fuel moisture code
 subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, curr_final_mc)
     implicit none 
 
@@ -161,6 +161,7 @@ subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, cur
 end subroutine calc_ffmc
 
 
+! calculate duff moisture code
 subroutine calc_dmc(dmc, month, day_length_dmc, temp, prev_rain, humidity, rain, prev_dmc, effective_rain) 
     implicit none 
 
@@ -202,6 +203,7 @@ subroutine calc_dmc(dmc, month, day_length_dmc, temp, prev_rain, humidity, rain,
 end subroutine calc_dmc
 
 
+! calculate drought code
 subroutine calc_dc(dc, temp, day_length_dc, month, rain, prev_dc, prev_rain, effective_rain)
     implicit none 
     
@@ -211,7 +213,6 @@ subroutine calc_dc(dc, temp, day_length_dc, month, rain, prev_dc, prev_rain, eff
     real, intent(out) :: dc
     real, intent(inout) :: temp, prev_rain, effective_rain
     real :: drying_factor_dc, post_rain_dc, moisture_equivalent_dc
-
 
     if(temp+2.8<0.) temp=-2.8
     drying_factor_dc=(.36*(temp+2.8)+day_length_dc(month))/2.
@@ -231,6 +232,7 @@ subroutine calc_dc(dc, temp, day_length_dc, month, rain, prev_dc, prev_rain, eff
 end subroutine calc_dc
 
 
+! calculate initial spread index
 subroutine calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
     implicit none 
 
@@ -247,6 +249,7 @@ subroutine calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
 end subroutine calc_isi
 
 
+! calculate buildup index
 subroutine calc_bui(bui, dc, dmc)
     implicit none 
 
@@ -268,6 +271,7 @@ subroutine calc_bui(bui, dc, dmc)
 end subroutine calc_bui
 
 
+! calculate fire weather index
 subroutine calc_fwi(fwi, bui, isi)
     implicit none 
 
@@ -292,6 +296,7 @@ subroutine calc_fwi(fwi, bui, isi)
 end subroutine calc_fwi
 
 
+! all moisture code and indices' calculations should be in float, but results should be integers
 subroutine round_results(int_dc, int_ffmc, int_dmc, int_isi, int_bui, int_fwi, dc, ffmc, dmc, isi, bui, fwi)
     implicit none
 

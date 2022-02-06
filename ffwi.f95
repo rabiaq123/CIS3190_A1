@@ -21,13 +21,8 @@ program ffwi
 
     write(*,50)
 
-    ! reading input file and error checking
-    write(*,*) 'Enter the filename to read from:'
-    do while (input_exists .eqv. .false.)
-        read (*,'(A)') input_fname
-        inquire(file=input_fname, exist=input_exists)
-        if (input_exists .eqv. .false.) write (*,*) 'An input file with this name does not exist. Please try again.'
-    end do
+    ! get input and output filenames and perform error checking
+    call get_filenames(input_exists, input_fname, output_fname)
 
     ! storing values from input file
     open(unit=20,file=input_fname,status='old',action='read')
@@ -35,10 +30,6 @@ program ffwi
     call read_section2(prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data)
     call read_section3(num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
     close(20, status='keep')
-
-    ! getting output file name
-    write(*,*) 'Enter the name of the file to output to:'
-    read (*,'(A)') output_fname
     
     ! performing calculations to print values to output file
     call perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
@@ -49,6 +40,29 @@ program ffwi
     write(*,*) 'You will find a legend to accompany the results compiled for you.'
 
 contains 
+
+
+! get input and output filenames, prompt user to re-enter filename if error
+subroutine get_filenames(input_exists, input_fname, output_fname)
+    implicit none 
+
+    character(len=20), intent(out) :: input_fname, output_fname
+    logical, intent(inout) :: input_exists
+
+    ! reading input file and error checking
+    write(*,*) 'Enter the filename to read from:'
+    do while (input_exists .eqv. .false.)
+        read (*,'(A)') input_fname
+        inquire(file=input_fname, exist=input_exists)
+        if (input_exists .eqv. .false.) write (*,*) 'An input file with this name does not exist. Please try again.'
+    end do
+
+    ! getting output file name
+    write(*,*) 'Enter the name of the file to output to:'
+    read (*,'(A)') output_fname
+
+    return
+end subroutine get_filenames
 
 
 ! read length of months and day-length factors
