@@ -53,7 +53,7 @@ subroutine perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, pr
             wind=wind_arr(i)
             
             ! fine fuel moisture code
-            call calc_ffmc(rain, prev_ffmc, prev_rain, humidity, wind, temp, curr_final_mc, ffmc)
+            call calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, curr_final_mc)
             
             ! duff moisture code
             call calc_dmc(dmc, month, day_length_dmc, temp, prev_rain, humidity, rain, prev_dmc, effective_rain)
@@ -87,17 +87,15 @@ subroutine perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, pr
 end subroutine perform_calcs
 
 
-subroutine calc_ffmc(rain, prev_ffmc, prev_rain, humidity, wind, temp, curr_final_mc, ffmc)
+subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, curr_final_mc)
     implicit none 
 
-    real, intent(in) :: prev_ffmc
-    real, intent(out):: prev_rain
-    integer, intent(in) :: humidity, wind
-    real, intent(in) :: temp
-    real, intent(out) :: curr_final_mc, ffmc
+    real, intent(in) :: temp, prev_ffmc
+    real, intent(out):: prev_rain, curr_final_mc, ffmc
     real, intent(inout) :: rain
-    real :: rain_func_ffmc, correction_term_ffmc
-    real :: prev_mc, drying_emc, wetting_emc, log_drying_rate, intermediate_drying_rate, post_rain_ffmc
+    integer, intent(in) :: humidity, wind
+    real :: rain_func_ffmc, correction_term_ffmc, prev_mc, drying_emc, wetting_emc
+    real :: log_drying_rate, intermediate_drying_rate, post_rain_ffmc
 
     if(rain>0.5) then
         prev_rain=rain
