@@ -7,8 +7,8 @@ program ffwi
     implicit none 
 
     ! variables for file reading
-    character(len=20) :: fname
-    logical :: lexist
+    character(len=20) :: input_fname, output_fname
+    logical :: input_exists
     ! variables used for calculations
     integer, dimension(12) :: len_month
     real, dimension(12) :: day_length_dmc, day_length_dc
@@ -20,30 +20,35 @@ program ffwi
     write(*,1004)
     1004  format(5x,'FOREST FIRE WEATHER INDEX')
 
-    ! error checking and reading input file
+    ! reading input file and error checking
     write(*,*) 'Enter the filename to read from:'
-    read (*,'(A)') fname
-    inquire(file=fname, exist=lexist)
-    if (lexist) then
-        call read_file(fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
+    read (*,'(A)') input_fname
+    inquire(file=input_fname, exist=input_exists)
+    if (input_exists) then
+        call read_file(input_fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
                 start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
     else
-        write (*,*) 'Invalid input file name. Exiting program...'
+        write (*,*) 'An input file with this name does not exist. Exiting program...'
+        call exit
     end if 
 
-    call perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
-                start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
+    ! getting output file name and error checking
+    write(*,*) 'Enter the name of the file to output to:'
+    read (*,'(A)') output_fname
+    
+    call perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
+    start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
 
 
 contains 
 
 
 ! read input file
-subroutine read_file(fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, &
+subroutine read_file(input_fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, &
             start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
     implicit none 
     
-    character (len=20), intent(in) :: fname
+    character (len=20), intent(in) :: input_fname
     integer :: stat, index
 
     ! variables used for calculations
@@ -54,8 +59,8 @@ subroutine read_file(fname, len_month, day_length_dmc, day_length_dc, prev_ffmc,
     real, dimension(365), intent(out) :: temp_arr, rain_arr
     integer, dimension(365), intent(out) :: humidity_arr, wind_arr
 
-    ! opening file to read; unit is used to represent file - can be anything but the value of 6
-    open(unit=20,file=fname,status='old',action='read')
+    ! opening file to read
+    open(unit=20,file=input_fname,status='old',action='read')
 
     ! read length of months and day-length factors
     do index=1,12

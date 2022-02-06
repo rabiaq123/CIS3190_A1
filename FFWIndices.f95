@@ -3,10 +3,11 @@ module FFWIndices
 contains
 
 
-subroutine perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
+subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
                 start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
     implicit none 
 
+    character(len=20), intent(in) :: output_fname
     ! section 1
     integer, dimension(12), intent(in) :: len_month
     real, dimension(12), intent(in) :: day_length_dmc, day_length_dc
@@ -35,6 +36,9 @@ subroutine perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, pr
     ! formatting for data to be output to the requested file
 15  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
 
+    ! open output file for printing
+    open(unit=25,file=output_fname,status='replace',action='write')
+
     do month=start_month,12
         days_in_month=len_month(month)
         if(month==start_month) then
@@ -46,26 +50,22 @@ subroutine perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, pr
         ! read daily weather data
         do date=data_start_date,days_in_month
             if (i == num_daily_entries + 1) exit
-            if(date == data_start_date) write(*,13)
+            if(date == data_start_date) write(25,13)
             temp=temp_arr(i)
             rain=rain_arr(i)
             humidity=humidity_arr(i)
             wind=wind_arr(i)
             
-            ! fine fuel moisture code
+            ! calculate fine fuel moisture code, duff moisture code, and drought code
             call calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, curr_final_mc)
-            
-            ! duff moisture code
             call calc_dmc(dmc, month, day_length_dmc, temp, prev_rain, humidity, rain, prev_dmc, effective_rain)
-            
-            ! drought code
             call calc_dc(dc, temp, day_length_dc, month, rain, prev_dc, prev_rain, effective_rain)
             
             ! calculate initial spread index, buildup index, and fire weather index
             call calc_isi(isi, wind, ffmc, curr_ff_mc, ff_moisture_func)
             call calc_bui(bui, dc, dmc)
             call calc_fwi(fwi, bui, isi)
-            
+
             ! convert values to integer
             int_dc=dc+0.5
             int_ffmc=ffmc+0.5
@@ -73,7 +73,7 @@ subroutine perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, pr
             int_isi=isi+0.5
             int_bui=bui+0.5
             int_fwi=fwi+0.5
-            write(*,15) month,date,temp_arr(i),humidity_arr(i),wind_arr(i),rain_arr(i),int_ffmc,int_dmc,int_dc, &
+            write(25,15) month,date,temp_arr(i),humidity_arr(i),wind_arr(i),rain_arr(i),int_ffmc,int_dmc,int_dc, &
                         int_isi,int_bui,int_fwi
             i = i + 1
 
@@ -82,6 +82,9 @@ subroutine perform_calcs(len_month, day_length_dmc, day_length_dc, prev_ffmc, pr
             prev_dc=dc
         end do
     end do
+
+    ! close file after all data has been stored
+    close(25, status='keep')
 
     return
 end subroutine perform_calcs
