@@ -67,12 +67,12 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
             call calc_fwi(fwi, bui, isi)
 
             ! convert values to integer
-            int_dc=dc+0.5
-            int_ffmc=ffmc+0.5
-            int_dmc=dmc+0.5
-            int_isi=isi+0.5
-            int_bui=bui+0.5
-            int_fwi=fwi+0.5
+            int_dc=nint(dc)
+            int_ffmc=nint(ffmc)
+            int_dmc=nint(dmc)
+            int_isi=nint(isi)
+            int_bui=nint(bui)
+            int_fwi=nint(fwi)
             write(25,15) month,date,temp_arr(i),humidity_arr(i),wind_arr(i),rain_arr(i),int_ffmc,int_dmc,int_dc, &
                         int_isi,int_bui,int_fwi
             i = i + 1
