@@ -17,10 +17,9 @@ program ffwi
     real, dimension(366) :: temp_arr, rain_arr
     integer, dimension(366) :: humidity_arr, wind_arr
 
-    write(*,*)
-    write(*,1004)
-    1004  format(5x,'FOREST FIRE WEATHER INDEX')
-    write(*,*)
+50  format(//,5x,'FOREST FIRE WEATHER INDEX',/)
+
+    write(*,50)
 
     ! reading input file and error checking
     write(*,*) 'Enter the filename to read from:'
@@ -29,7 +28,7 @@ program ffwi
         inquire(file=input_fname, exist=input_exists)
         if (input_exists .eqv. .false.) write (*,*) 'An input file with this name does not exist. Please try again.'
     end do
-    
+
     ! storing values from input file
     open(unit=20,file=input_fname,status='old',action='read')
     call read_section1(len_month, day_length_dmc, day_length_dc)
@@ -47,6 +46,7 @@ program ffwi
 
     write(*,*)
     write(*,*) 'Your output file is ready to be viewed!'
+    write(*,*) 'You will find a legend to accompany the results compiled for you.'
 
 contains 
 

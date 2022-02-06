@@ -31,13 +31,14 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
     ! FWI, ISI, BUI variables
     real :: isi, bui, fwi, curr_ff_mc, ff_moisture_func
 
-    ! header formatting
+    ! formatting for headings in output file
 13  format(/,1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi')
     ! formatting for data to be output to the requested file
 15  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
 
     ! open output file for printing
     open(unit=25,file=output_fname,status='replace',action='write')
+    call output_legend()
 
     do month=start_month,12
         days_in_month=len_month(month)
@@ -83,6 +84,25 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
 
     return
 end subroutine perform_calcs
+
+
+! print legend for headings in output file
+subroutine output_legend()
+    implicit none 
+
+    write(25,*) 'FOREST FIRE WEATHER INDEX CALCULATIONS'
+    write(25,*) '--------------------------------------'
+    write(25,*) 'LEGEND'
+    write(25,*) 'rh     - relative humidity'
+    write(25,*) 'ffmc   - fine fuel moisture code'
+    write(25,*) 'dmc    - duff moisture code'
+    write(25,*) 'dc     - drought code'
+    write(25,*) 'isi    - initial sread index'
+    write(25,*) 'bui    - buildup index'
+    write(25,*) 'fwi    - fire weather index'
+
+    return 
+end subroutine output_legend
 
 
 subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, curr_final_mc)
