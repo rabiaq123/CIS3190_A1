@@ -9,7 +9,6 @@ program ffwi
     ! variables for file reading
     character(len=20) :: input_fname, output_fname
     logical :: input_exists
-    integer :: index
     ! variables used for calculations
     integer, dimension(12) :: len_month
     real, dimension(12) :: day_length_dmc, day_length_dc
@@ -29,8 +28,6 @@ program ffwi
     inquire(file=input_fname, exist=input_exists)
     if (input_exists) then
         open(unit=20,file=input_fname,status='old',action='read')
-        ! call read_file(input_fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
-        ! start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
         call read_section1(len_month, day_length_dmc, day_length_dc)
         call read_section2(prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data)
         call read_section3(num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
@@ -40,17 +37,6 @@ program ffwi
         call exit
     end if 
     
-    ! checking if values were read in properly
-    ! open(unit=30,file='testInput',status='replace',action='write')
-    ! do index=1,12
-    !     write(30,'(i2,f4.1,f4.1)') len_month(index), day_length_dmc(index), day_length_dc(index)
-    ! end do
-    ! write(30,'(f4.1,f4.1,f5.1,i2,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
-    ! do index=1,num_daily_entries
-    !     write(30,'(f4.1,i4,i4,f4.1)') temp_arr(index), humidity_arr(index), wind_arr(index), rain_arr(index)
-    ! end do
-    ! close(30, status='keep')
-
     ! getting output file name and error checking
     write(*,*) 'Enter the name of the file to output to:'
     read (*,'(A)') output_fname
@@ -112,49 +98,6 @@ subroutine read_section3(num_daily_entries, temp_arr, rain_arr, humidity_arr, wi
 
     return
 end subroutine read_section3
-
-
-! read input file
-subroutine read_file(input_fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, &
-            start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
-    implicit none 
-    
-    character (len=20), intent(in) :: input_fname
-    integer :: stat, index
-
-    ! variables used for calculations
-    integer, dimension(12), intent(out) :: len_month
-    real, dimension(12), intent(out) :: day_length_dmc, day_length_dc
-    real, intent(out) :: prev_ffmc, prev_dmc, prev_dc
-    integer, intent(out) :: start_month, days_of_data, num_daily_entries
-    real, dimension(365), intent(out) :: temp_arr, rain_arr
-    integer, dimension(365), intent(out) :: humidity_arr, wind_arr
-
-    ! opening file to read
-    open(unit=20,file=input_fname,status='old',action='read')
-
-    ! read length of months and day-length factors
-    do index=1,12
-        read(20,'(i2,f4.1,f4.1)') len_month(index), day_length_dmc(index), day_length_dc(index)
-    end do
-
-    ! read initial moisture code values, starting month, and # of days weather data is provided that month
-    read(20,'(f4.1,f4.1,f5.1,i2,i2)') prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data
-
-    ! read daily weather data 
-    index = 1
-    do
-        read(20,'(f4.1,i4,i4,f4.1)',IOSTAT=stat) temp_arr(index), humidity_arr(index), wind_arr(index), rain_arr(index)
-        if (IS_IOSTAT_END(stat)) exit
-        index = index + 1
-    end do
-    num_daily_entries = index-1
-
-    ! close file after all data has been stored
-    close(20, status='keep')
-
-    return
-end subroutine read_file
 
 
 end program ffwi
