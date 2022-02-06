@@ -15,8 +15,8 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
     real, intent(inout) :: prev_ffmc, prev_dmc, prev_dc 
     integer, intent(in) :: start_month, days_of_data, num_daily_entries
     ! section 3
-    real, dimension(365), intent(in) :: temp_arr, rain_arr
-    integer, dimension(365), intent(in) :: humidity_arr, wind_arr
+    real, dimension(366), intent(in) :: temp_arr, rain_arr
+    integer, dimension(366), intent(in) :: humidity_arr, wind_arr
 
     ! variables being read from file
     real :: rain, temp
@@ -32,7 +32,7 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
     real :: isi, bui, fwi, curr_ff_mc, ff_moisture_func
 
     ! header formatting
-13  format(10(/),1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi'/)
+13  format(/,1x,'  date  temp  rh   wind  rain   ffmc   dmc   dc   isi   bui   fwi')
     ! formatting for data to be output to the requested file
 15  format(1x,2i3,f6.1,i4,i6,f7.1,6i6)
 

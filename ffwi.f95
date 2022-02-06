@@ -8,14 +8,14 @@ program ffwi
 
     ! variables for file reading
     character(len=20) :: input_fname, output_fname
-    logical :: input_exists
+    logical :: input_exists = .false.
     ! variables used for calculations
     integer, dimension(12) :: len_month
     real, dimension(12) :: day_length_dmc, day_length_dc
     real :: prev_ffmc, prev_dmc, prev_dc
     integer :: start_month, days_of_data, num_daily_entries
-    real, dimension(365) :: temp_arr, rain_arr
-    integer, dimension(365) :: humidity_arr, wind_arr
+    real, dimension(366) :: temp_arr, rain_arr
+    integer, dimension(366) :: humidity_arr, wind_arr
 
     write(*,*)
     write(*,1004)
@@ -24,29 +24,29 @@ program ffwi
 
     ! reading input file and error checking
     write(*,*) 'Enter the filename to read from:'
-    read (*,'(A)') input_fname
-    inquire(file=input_fname, exist=input_exists)
-    if (input_exists) then
-        open(unit=20,file=input_fname,status='old',action='read')
-        call read_section1(len_month, day_length_dmc, day_length_dc)
-        call read_section2(prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data)
-        call read_section3(num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
-        close(20, status='keep')
-    else
-        write (*,*) 'An input file with this name does not exist. Exiting program...'
-        call exit
-    end if 
+    do while (input_exists .eqv. .false.)
+        read (*,'(A)') input_fname
+        inquire(file=input_fname, exist=input_exists)
+        if (input_exists .eqv. .false.) write (*,*) 'An input file with this name does not exist. Please try again.'
+    end do
     
-    ! getting output file name and error checking
+    ! storing values from input file
+    open(unit=20,file=input_fname,status='old',action='read')
+    call read_section1(len_month, day_length_dmc, day_length_dc)
+    call read_section2(prev_ffmc, prev_dmc, prev_dc, start_month, days_of_data)
+    call read_section3(num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
+    close(20, status='keep')
+
+    ! getting output file name
     write(*,*) 'Enter the name of the file to output to:'
     read (*,'(A)') output_fname
     
+    ! performing calculations to print values to output file
     call perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
     start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
 
     write(*,*)
-    write(*,*) ' Your output file is ready to be viewed!'
-
+    write(*,*) 'Your output file is ready to be viewed!'
 
 contains 
 
