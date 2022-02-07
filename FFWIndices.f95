@@ -309,7 +309,7 @@ subroutine calc_fwi(fwi, bui, isi)
     end if
 
     ! calculating final FWI
-    if(intermediate_fwi-1.0 <= 0.) then
+    if(intermediate_fwi <= 1.0) then
         ! if intermediate FWI is not greater than 1, let intermediate and final FWI values be equal
         fwi=intermediate_fwi
     else 
