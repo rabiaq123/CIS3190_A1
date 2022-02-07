@@ -49,6 +49,7 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
 
         ! calculate and print results
         do date=data_start_date,days_in_month
+            ! exit loop if all daily weather data entries have been accounted for in output file calculations
             if (idx == num_daily_entries + 1) exit
             if(date == data_start_date) write(25,13)
             temp=temp_arr(idx)

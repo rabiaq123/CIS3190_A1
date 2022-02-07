@@ -119,6 +119,13 @@ subroutine read_section3(num_daily_entries, temp_arr, rain_arr, humidity_arr, wi
     real, dimension(366), intent(out) :: temp_arr, rain_arr
     integer, dimension(366), intent(out) :: humidity_arr, wind_arr
 
+    ! Note that 366 was chosen as the array length for all daily weather data arrays, because
+    ! if the starting month in the file were January and the file contained data up to the end of the year,
+    ! my arrays would have enough space allocated for a whole year (leap years included).
+
+    ! Read each daily weather entry and count the number of entries there are.
+    ! Getting number of daily entries so when data is being printed, only array elements with data 
+    ! from the file are being accessed, and not all 366 elements.
     do
         read(20,'(f4.1,i4,i4,f4.1)',IOSTAT=stat) temp_arr(index), humidity_arr(index), wind_arr(index), rain_arr(index)
         if (IS_IOSTAT_END(stat)) exit
