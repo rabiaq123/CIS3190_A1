@@ -3,6 +3,7 @@ module FFWIndices
 contains
 
 
+! perform all calculations and print values to output file
 subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc, prev_ffmc, prev_dmc, prev_dc, & 
                 start_month, days_of_data, num_daily_entries, temp_arr, rain_arr, humidity_arr, wind_arr)
     implicit none 
