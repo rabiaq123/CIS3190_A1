@@ -121,7 +121,7 @@ subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, cur
     ! rainfall routine must be skipped in dry weather
     if(rain > 0.5) then
         prev_rain=rain
-        if(prev_rain<=1.45) then
+        if(prev_rain <= 1.45) then
             rain_func_ffmc=123.85-(55.6*alog(prev_rain+1.016))
         else 
             if(prev_rain < 5.75) then
@@ -185,21 +185,21 @@ subroutine calc_dmc(dmc, month, day_length_dmc, temp, prev_rain, humidity, rain,
     real :: drying_factor_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, post_rain_dmc
 
     ! values less than -1.1 for noon temperature cannot be used to calculate drying factor (i.e. log drying rate in DMC)
-    if(temp+1.1 < 0.) temp=-1.1
+    if(temp < -1.1) temp=-1.1
     drying_factor_dmc=1.894*(temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
 
     ! rainfall routine must be skipped in dry weather
-    if(rain>1.5) then
+    if(rain > 1.5) then
         prev_rain=rain
         effective_rain=0.92*prev_rain-1.27
         mc_dmc=20.0+280./exp(0.023*prev_dmc)
         ! calculating slope variable in DMC rain effect
-        if(prev_dmc<=33.) then
+        if(prev_dmc <= 33.) then
             slope_func_dmc=100./(0.5+0.3*prev_dmc)
         else
-            if (prev_dmc-65. < 0.0) then
+            if (prev_dmc < 65.) then
                 slope_func_dmc=14.-1.3*alog(prev_dmc)
-            else if (prev_dmc-65. == 0.0) then
+            else if (prev_dmc == 65.) then
                 slope_func_dmc=14.-1.3*alog(prev_dmc)
             else
                 slope_func_dmc=6.2*alog(prev_dmc)-17.2
@@ -212,7 +212,7 @@ subroutine calc_dmc(dmc, month, day_length_dmc, temp, prev_rain, humidity, rain,
     end if
 
     ! DMC after rain cannot theoretically be less than 0
-    if(post_rain_dmc<0.) post_rain_dmc=0.0
+    if(post_rain_dmc < 0.) post_rain_dmc=0.0
     dmc=post_rain_dmc+drying_factor_dmc
 
     return
