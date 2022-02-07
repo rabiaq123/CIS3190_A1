@@ -17,7 +17,7 @@ program ffwi
     real, dimension(366) :: temp_arr, rain_arr
     integer, dimension(366) :: humidity_arr, wind_arr
 
-50  format(//,5x,'FOREST FIRE WEATHER INDEX',/)
+50  format(//,1x,'FOREST FIRE WEATHER INDEX',/)
 
     write(*,50)
     call display_unit_note()
@@ -38,7 +38,7 @@ program ffwi
 
     write(*,*)
     write(*,*) 'Your output file is ready to be viewed!'
-    write(*,*) 'You will find a legend to accompany the results compiled for you.'
+    write(*,*) 'You will find a legend accompanying the results compiled for you within your file.'
 
 contains 
 

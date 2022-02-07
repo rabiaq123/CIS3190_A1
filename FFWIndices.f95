@@ -47,7 +47,7 @@ subroutine perform_calcs(output_fname, len_month, day_length_dmc, day_length_dc,
             data_start_date=1
         end if
 
-        ! read daily weather data
+        ! calculate and print results
         do date=data_start_date,days_in_month
             if (idx == num_daily_entries + 1) exit
             if(date == data_start_date) write(25,13)
@@ -118,6 +118,7 @@ subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, cur
     real :: rain_func_ffmc, correction_term_ffmc, prev_mc, drying_emc, wetting_emc
     real :: log_drying_rate, intermediate_drying_rate, post_rain_ffmc
 
+    ! rainfall routine must be skipped in dry weather
     if(rain>0.5) then
         prev_rain=rain
         if(prev_rain<=1.45) then
@@ -133,8 +134,10 @@ subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, cur
         end if
         correction_term_ffmc=8.73*exp(-0.1117*prev_ffmc)
         post_rain_ffmc=(prev_ffmc/100.)*rain_func_ffmc+(1.0-correction_term_ffmc)
+        ! FFMC after rain cannot theoretically be less than 0
         if(post_rain_ffmc<0.) post_rain_ffmc=0.0
     else 
+        ! not enough rain to have it affect the FFMC
         rain=0.0
         post_rain_ffmc=prev_ffmc
     end if
@@ -142,17 +145,23 @@ subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, cur
     prev_mc=101.-post_rain_ffmc
     drying_emc=0.942*(humidity**0.679)+(11.*exp((humidity-100.)/10.))+0.18*(21.1-temp)*(1.-1./exp(0.115*humidity))
 
+    ! calculating current day's final moisture content (mc)
     if(prev_mc-drying_emc < 0) then
+        ! if starting mc is less than drying emc, calculate wetting emc 
         wetting_emc=0.618*(humidity**0.753)+(10.*exp((humidity-100.)/10.))+0.18*(21.1-temp)*(1.-1./exp(0.115*humidity))
-        if(prev_mc<wetting_emc) curr_final_mc=wetting_emc-(wetting_emc-prev_mc)/1.9953
+        ! if starting mc is also less than wetting emc, calculate day's final mc
+        if(prev_mc < wetting_emc) curr_final_mc=wetting_emc-(wetting_emc-prev_mc)/1.9953
     else if(prev_mc-drying_emc == 0) then
+        ! if starting mc and drying emc are the same, make day's final mc equal to the previous mc
         curr_final_mc=prev_mc
     else
+        ! perform the following if previous mc is greater than drying emc
         intermediate_drying_rate=0.424*(1.-(humidity/100.)**1.7)+(0.0694*(wind**0.5))*(1.-(humidity/100.)**8)
         log_drying_rate=intermediate_drying_rate*(0.463*(exp(0.0365*temp)))
         curr_final_mc=drying_emc+(prev_mc-drying_emc)/10.**log_drying_rate
     end if 
 
+    ! calculating FFMC
     ffmc=101.-curr_final_mc
     if(ffmc>101.) then
         ffmc=101.
@@ -175,13 +184,16 @@ subroutine calc_dmc(dmc, month, day_length_dmc, temp, prev_rain, humidity, rain,
     real, intent(inout) :: temp, prev_rain
     real :: drying_factor_dmc, mc_dmc, slope_func_dmc, mc_post_rain_dmc, post_rain_dmc
 
-    if(temp+1.1<0.) temp=-1.1
+    ! values less than -1.1 for noon temperature cannot be used to calculate drying factor (i.e. log drying rate in DMC)
+    if(temp+1.1 < 0.) temp=-1.1
     drying_factor_dmc=1.894*(temp+1.1)*(100.-humidity)*(day_length_dmc(month)*0.0001)
 
+    ! rainfall routine must be skipped in dry weather
     if(rain>1.5) then
         prev_rain=rain
         effective_rain=0.92*prev_rain-1.27
         mc_dmc=20.0+280./exp(0.023*prev_dmc)
+        ! calculating slope variable in DMC rain effect
         if(prev_dmc<=33.) then
             slope_func_dmc=100./(0.5+0.3*prev_dmc)
         else
@@ -199,6 +211,7 @@ subroutine calc_dmc(dmc, month, day_length_dmc, temp, prev_rain, humidity, rain,
         post_rain_dmc=prev_dmc
     end if
 
+    ! DMC after rain cannot theoretically be less than 0
     if(post_rain_dmc<0.) post_rain_dmc=0.0
     dmc=post_rain_dmc+drying_factor_dmc
 
@@ -217,9 +230,13 @@ subroutine calc_dc(dc, temp, day_length_dc, month, rain, prev_dc, prev_rain, eff
     real, intent(inout) :: temp, prev_rain, effective_rain
     real :: drying_factor_dc, post_rain_dc, moisture_equivalent_dc
 
+    ! values less than -2.8 for noon temperature cannot be used to calculate drying factor (i.e. potential evapotranspiration)
     if(temp+2.8<0.) temp=-2.8
     drying_factor_dc=(.36*(temp+2.8)+day_length_dc(month))/2.
+
+    ! calculating DC after rain; rainfall routine must be skipped in dry weather
     if(rain<=2.8) then
+        ! if rainfall in open is not greater than 2.8mm, DC after rain is equal to starting or yesterday's DC
         post_rain_dc=prev_dc
     else 
         prev_rain=rain
@@ -228,6 +245,8 @@ subroutine calc_dc(dc, temp, day_length_dc, month, rain, prev_dc, prev_rain, eff
         post_rain_dc=prev_dc-400.*alog(1.+((3.937*effective_rain)/moisture_equivalent_dc))
         if(post_rain_dc<=0.) post_rain_dc=0.0
     end if
+
+    ! DC after rain cannot theoretically be less than 0
     dc=post_rain_dc+drying_factor_dc
     if(dc<0.) dc=0.0
 
@@ -261,13 +280,13 @@ subroutine calc_bui(bui, dc, dmc)
     real :: fix_bui_ratio_func, fix_bui_dmc_func
 
     bui=(0.8*dc*dmc)/(dmc+0.4*dc)
-    if(bui<dmc) then
+    if(bui < dmc) then
         ! ratio function to correct BUI when less than DMC
         fix_bui_ratio_func=(dmc-bui)/dmc
         ! DMC function to correct BUI when less than DMC
         fix_bui_dmc_func=0.92+(0.0114*dmc)**1.7
-        bui=dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
-        if(bui<0.) bui=0.
+        bui = dmc-(fix_bui_dmc_func*fix_bui_ratio_func)
+        if(bui < 0.) bui=0.
     end if
 
     return
@@ -282,15 +301,19 @@ subroutine calc_fwi(fwi, bui, isi)
     real, intent(out) :: fwi 
     real :: intermediate_fwi, log_final_fwi
 
-    if(bui>80.) then
+    ! calculating intermediate FWI
+    if(bui > 80.) then
         intermediate_fwi=0.1*isi*(1000./(25.+108.64/exp(0.023*bui)))
     else 
         intermediate_fwi=0.1*isi*(0.626*bui**0.809+2.)
     end if
-    
-    if(intermediate_fwi-1.0<=0.) then
+
+    ! calculating final FWI
+    if(intermediate_fwi-1.0 <= 0.) then
+        ! if intermediate FWI is not greater than 1, let intermediate and final FWI values be equal
         fwi=intermediate_fwi
     else 
+        ! else calculate final FWI from its logarithm
         log_final_fwi=2.72*(0.43*alog(intermediate_fwi))**0.647
         fwi=exp(log_final_fwi)
     end if
