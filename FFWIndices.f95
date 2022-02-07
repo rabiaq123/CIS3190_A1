@@ -119,14 +119,14 @@ subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, cur
     real :: log_drying_rate, intermediate_drying_rate, post_rain_ffmc
 
     ! rainfall routine must be skipped in dry weather
-    if(rain>0.5) then
+    if(rain > 0.5) then
         prev_rain=rain
         if(prev_rain<=1.45) then
             rain_func_ffmc=123.85-(55.6*alog(prev_rain+1.016))
         else 
-            if(prev_rain-5.75 < 0) then
+            if(prev_rain < 5.75) then
                 rain_func_ffmc=57.87-(18.2*alog(prev_rain-1.016))
-            else if(prev_rain-5.75 == 0) then
+            else if(prev_rain == 5.75) then
                 rain_func_ffmc=57.87-(18.2*alog(prev_rain-1.016))
             else
                 rain_func_ffmc=40.69-(8.25*alog(prev_rain-1.905))
@@ -151,7 +151,7 @@ subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, cur
         wetting_emc=0.618*(humidity**0.753)+(10.*exp((humidity-100.)/10.))+0.18*(21.1-temp)*(1.-1./exp(0.115*humidity))
         ! if starting mc is also less than wetting emc, calculate day's final mc
         if(prev_mc < wetting_emc) curr_final_mc=wetting_emc-(wetting_emc-prev_mc)/1.9953
-    else if(prev_mc-drying_emc == 0) then
+    else if(prev_mc == drying_emc) then
         ! if starting mc and drying emc are the same, make day's final mc equal to the previous mc
         curr_final_mc=prev_mc
     else
@@ -163,7 +163,7 @@ subroutine calc_ffmc(ffmc, rain, humidity, wind, temp, prev_ffmc, prev_rain, cur
 
     ! calculating FFMC
     ffmc=101.-curr_final_mc
-    if(ffmc>101.) then
+    if(ffmc > 101.) then
         ffmc=101.
     else if(ffmc < 0) then 
         ffmc=0.0

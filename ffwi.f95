@@ -47,11 +47,11 @@ contains
 subroutine display_unit_note()
     implicit none 
 
-    write(*,*) ' Please note the units this program uses for daily weather data:'
-    write(*,*) ' temperature: °C'
-    write(*,*) ' relative humidity: %'
-    write(*,*) ' wind speed: km/h'
-    write(*,*) ' rainfall: mm'
+    write(*,*) 'Please note the units this program uses for daily weather data:'
+    write(*,*) 'temperature: °C'
+    write(*,*) 'relative humidity: %'
+    write(*,*) 'wind speed: km/h'
+    write(*,*) 'rainfall: mm'
     write(*,*)
 
     return 
