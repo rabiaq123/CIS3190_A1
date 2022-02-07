@@ -231,11 +231,11 @@ subroutine calc_dc(dc, temp, day_length_dc, month, rain, prev_dc, prev_rain, eff
     real :: drying_factor_dc, post_rain_dc, moisture_equivalent_dc
 
     ! values less than -2.8 for noon temperature cannot be used to calculate drying factor (i.e. potential evapotranspiration)
-    if(temp+2.8<0.) temp=-2.8
+    if(temp < -2.8) temp=-2.8
     drying_factor_dc=(.36*(temp+2.8)+day_length_dc(month))/2.
 
     ! calculating DC after rain; rainfall routine must be skipped in dry weather
-    if(rain<=2.8) then
+    if(rain <= 2.8) then
         ! if rainfall in open is not greater than 2.8mm, DC after rain is equal to starting or yesterday's DC
         post_rain_dc=prev_dc
     else 
@@ -248,7 +248,7 @@ subroutine calc_dc(dc, temp, day_length_dc, month, rain, prev_dc, prev_rain, eff
 
     ! DC after rain cannot theoretically be less than 0
     dc=post_rain_dc+drying_factor_dc
-    if(dc<0.) dc=0.0
+    if(dc < 0.) dc=0.0
 
     return 
 end subroutine calc_dc
